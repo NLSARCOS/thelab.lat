@@ -1,0 +1,72 @@
+// VibeCheck Security SaaS - Prisma Schema
+// Focus: Multi-tenant, Repo Connectivity, Shield Audit History
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db" 
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String
+  name          String?
+  role          Role     @default(USER)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  organizations Organization[]
+  repos         Repository[]
+  shieldLogs    ShieldLog[]
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Repository {
+  id        String   @id @default(cuid())
+  name      String
+  gitUrl    String
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  status    String   @default("connected") // connected, scanning, vulnerable, safe
+  lastScan  DateTime?
+  
+  audits    AuditReport[]
+  createdAt DateTime @default(now())
+}
+
+model AuditReport {
+  id            String   @id @default(cuid())
+  repoId        String
+  repo          Repository @relation(fields: [repoId], references: [id])
+  issuesFound   Int
+  criticalFound Int
+  fullJson      String   // Los detalles de las vulnerabilidades
+  createdAt     DateTime @default(now())
+}
+
+model ShieldLog {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  promptPreview   String
+  riskScore       Int
+  status          String   // BLOCKED, CLEAN
+  ruleMatched     String?
+  createdAt       DateTime @default(now())
+}

@@ -1,0 +1,15 @@
+
+> vibecheck-security@1.0.0 dev
+> ts-node src/index.ts
+
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+{"level":30,"time":1772203033346,"pid":107424,"hostname":"nelson-ThinkPad-T430","msg":"Server listening at http://127.0.0.1:8080"}
+[VIBE_SECURITY] Heartbeat established at port 8080
+{"level":30,"time":1772203033347,"pid":107424,"hostname":"nelson-ThinkPad-T430","msg":"Server listening at http://192.168.100.3:8080"}
+{"level":30,"time":1772203056287,"pid":107424,"hostname":"nelson-ThinkPad-T430","reqId":"req-1","req":{"method":"POST","url":"/v1/scanner/audit","host":"localhost:8080","remoteAddress":"127.0.0.1","remotePort":47122},"msg":"incoming request"}
+[VibeCheck Scanner] Iniciando auditoría en: /home/nelson/.openclaw/workspace/thelab.lat/vibecheck-security/tests
+{"level":30,"time":1772203056310,"pid":107424,"hostname":"nelson-ThinkPad-T430","reqId":"req-1","res":{"statusCode":200},"responseTime":21.45109197497368,"msg":"request completed"}
+{"level":30,"time":1772203109157,"pid":107424,"hostname":"nelson-ThinkPad-T430","reqId":"req-2","req":{"method":"GET","url":"/v1/scanner/history","host":"localhost:8080","remoteAddress":"127.0.0.1","remotePort":41976},"msg":"incoming request"}
+{"level":30,"time":1772203109162,"pid":107424,"hostname":"nelson-ThinkPad-T430","reqId":"req-2","res":{"statusCode":200},"responseTime":4.836548000574112,"msg":"request completed"}
+{"level":30,"time":1772203109172,"pid":107424,"hostname":"nelson-ThinkPad-T430","reqId":"req-3","req":{"method":"GET","url":"/v1/scanner/history","host":"localhost:8080","remoteAddress":"127.0.0.1","remotePort":41976},"msg":"incoming request"}
+{"level":30,"time":1772203109175,"pid":107424,"hostname":"nelson-ThinkPad-T430","reqId":"req-3","res":{"statusCode":200},"responseTime":2.149821013212204,"msg":"request completed"}

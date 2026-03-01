@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THELAB.LAT | Contacto Élite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg: #FCFCFD; --fg: #09090B; }
+        * { font-family: 'Space Grotesk', sans-serif; cursor: crosshair; }
+        body { background: var(--bg); color: var(--fg); overflow-x: hidden; }
+        .glass-card { background: #fff; border: 1px solid #E2E8F0; box-shadow: 0 4px 40px rgba(0,0,0,0.03); border-radius: 2rem; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <nav class="p-10 flex justify-between items-center">
+        <a href="/" class="text-2xl font-black tracking-tighter uppercase transition-opacity hover:opacity-50">Back to Lab</a>
+    </nav>
+
+    <main class="flex-1 flex items-center justify-center p-10">
+        <div class="max-w-4xl w-full grid md:grid-cols-2 gap-20">
+            <div>
+                <span class="text-[10px] font-black uppercase tracking-[0.5em] text-slate-400 mb-8 block">Connect with us</span>
+                <h1 class="text-6xl font-black tracking-tight uppercase leading-none mb-12">Talk to <br/> <span class="text-blue-600">Humans.</span></h1>
+                <p class="text-xl font-light text-slate-500 mb-12 leading-relaxed">
+                    Nuestra IA ya está operativa, pero nuestros expertos están listos para diseñar tu próximo activo digital.
+                </p>
+                
+                <div class="space-y-6">
+                    <a href="https://wa.me/593997100380" target="_blank" class="flex items-center gap-6 group hover:translate-x-3 transition-transform">
+                        <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
+                            <i class="fab fa-whatsapp text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase font-black text-slate-400">Direct Message</p>
+                            <p class="text-lg font-bold">+593 99 710 0380</p>
+                        </div>
+                    </a>
+                    <a href="mailto:nelson@performanze.io" class="flex items-center gap-6 group hover:translate-x-3 transition-transform">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                            <i class="fas fa-envelope text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase font-black text-slate-400">Email Hub</p>
+                            <p class="text-lg font-bold">nelson@performanze.io</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="glass-card p-12">
+                <form class="space-y-8">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2">Name</label>
+                        <input type="text" placeholder="Identity" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 outline-none focus:border-black transition-all">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest pl-2">Project Brief</label>
+                        <textarea placeholder="Tell us about the asset you want to build" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 outline-none focus:border-black transition-all min-h-[150px]"></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-widest text-sm shadow-xl hover:bg-slate-800 transition-all">
+                        Initialize Contact
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="p-10 text-center opacity-40 text-[9px] font-black uppercase tracking-[0.4em]">
+        © 2026 THELAB.LAT // ALL RIGHTS RESERVED
+    </footer>
+
+    <script>
+        gsap.from("main", { opacity: 0, y: 50, duration: 1.5, ease: "expo.out" });
+    </script>
+</body>
+</html>

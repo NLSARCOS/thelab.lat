@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL | TheLab.lat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;700&family=Fira+Code&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #030303; --accent: #00f2ff; }
+        * { font-family: 'Space Grotesk', sans-serif; cursor: crosshair; }
+        body { background: var(--bg); color: #fff; }
+        .mono { font-family: 'Fira Code', monospace; }
+        .glass { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); }
+    </style>
+</head>
+<body class="p-8">
+    <div class="max-w-7xl mx-auto">
+        <header class="flex justify-between items-center mb-20 border-b border-white/5 pb-8">
+            <div class="flex items-center gap-4">
+                <div class="w-1 h-8 bg-cyan-400"></div>
+                <span class="text-xl font-bold tracking-widest uppercase">TheLab / Terminal</span>
+            </div>
+            <div class="flex gap-8 items-center">
+                <span class="mono text-xs text-green-500">● SYSTEM_ONLINE</span>
+                <a href="/" class="text-xs font-bold border border-white/10 px-4 py-2 hover:bg-white/5 uppercase">Exit Terminal</a>
+            </div>
+        </header>
+
+        <div class="grid lg:grid-cols-4 gap-12">
+            <!-- Sidebar -->
+            <div class="lg:col-span-1 space-y-12">
+                <div>
+                    <h3 class="text-xs font-mono text-gray-500 uppercase tracking-widest mb-6">/ Identification</h3>
+                    <div class="glass p-6">
+                        <p class="text-sm font-bold mb-1">NELSON_PERFORMANZE</p>
+                        <p class="text-xs text-cyan-400 font-mono">Plan: ELITE_ACCESS</p>
+                    </div>
+                </div>
+                
+                <nav class="space-y-4">
+                    <h3 class="text-xs font-mono text-gray-500 uppercase tracking-widest mb-6">/ Navigation</h3>
+                    <a href="#" class="block text-sm font-bold text-white border-l-2 border-cyan-400 pl-4">Dashboard</a>
+                    <a href="#" class="block text-sm font-bold text-gray-500 hover:text-white transition-colors pl-4">Bulk Engine</a>
+                    <a href="#" class="block text-sm font-bold text-gray-500 hover:text-white transition-colors pl-4">API Docs</a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="lg:col-span-3 space-y-12">
+                <div class="flex justify-between items-end">
+                    <h2 class="text-4xl font-bold uppercase tracking-tighter">Recent <span class="text-cyan-400">Optimizations</span></h2>
+                    <button class="bg-white text-black px-8 py-3 text-xs font-black uppercase tracking-widest hover:bg-cyan-400 transition-all">New Bulk Run</button>
+                </div>
+
+                <div id="history" class="space-y-4">
+                    <div class="glass p-8 text-center text-gray-500 italic font-light">
+                        [!] INITIALIZING_DATA_FETCH...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchHistory() {
+            const historyDiv = document.getElementById('history');
+            try {
+                // For demonstration, we use a generic fetch. In real usage, this would detect the user's shop.
+                const response = await fetch('/api/history/guest');
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    historyDiv.innerHTML = '<div class="glass p-12 text-center text-gray-500 font-light uppercase tracking-widest">No previous data found in local storage.</div>';
+                    return;
+                }
+
+                historyDiv.innerHTML = data.map(item => `
+                    <div class="glass p-8 hover:border-white/20 transition-all group">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h4 class="text-xl font-bold uppercase tracking-tight mb-2">${item.title}</h4>
+                                <p class="mono text-[10px] text-gray-500 uppercase">${item.created_at} // SHOP: ${item.shop_url}</p>
+                            </div>
+                            <span class="bg-cyan-400/10 text-cyan-400 px-3 py-1 mono text-[10px] uppercase font-bold">Status: OK</span>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-8 text-sm">
+                            <div>
+                                <span class="text-gray-600 uppercase font-bold text-[10px] block mb-4">Original Description</span>
+                                <div class="text-gray-500 line-clamp-3 font-light italic">${item.original_desc || 'No data'}</div>
+                            </div>
+                            <div>
+                                <span class="text-cyan-400 uppercase font-bold text-[10px] block mb-4">TheLab AI Content</span>
+                                <div class="text-gray-300 line-clamp-3 font-light">${item.optimized_desc}</div>
+                            </div>
+                        </div>
+                        <div class="mt-8 pt-8 border-t border-white/5 flex gap-4 opacity-0 group-hover:opacity-100 transition-all">
+                            <button class="text-xs font-bold uppercase tracking-widest border border-white/10 px-4 py-2 hover:bg-white/5">View Full Log</button>
+                            <button class="text-xs font-bold uppercase tracking-widest border border-white/10 px-4 py-2 hover:bg-white/5">Export JSON</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                historyDiv.innerHTML = '<div class="glass p-8 text-red-500 mono uppercase">Error: Failed to connect to core database.</div>';
+            }
+        }
+        
+        window.onload = fetchHistory;
+    </script>
+</body>
+</html>

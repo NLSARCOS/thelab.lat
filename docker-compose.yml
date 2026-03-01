@@ -1,0 +1,20 @@
+services:
+  vibecheck-api:
+    build: 
+      context: ./vibecheck-security
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./vibecheck-security/data:/usr/src/app/data
+    environment:
+      - CORE_PORT=8080
+      - NODE_ENV=production
+
+  vibecheck-dash:
+    image: nginx:alpine
+    ports:
+      - "3001:80"
+    volumes:
+      - ./vibecheck-dashboard/dist:/usr/share/nginx/html
+    depends_on:
+      - vibecheck-api

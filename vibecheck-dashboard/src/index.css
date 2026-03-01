@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Space Grotesk', sans-serif;
+  background-color: #FCFCFD;
+  color: #1A1D20;
+}
+
+.glass-card {
+  @apply bg-white border border-slate-200 shadow-[0_4px_40px_rgba(0,0,0,0.04)] rounded-2xl;
+}
+
+.status-active {
+  @apply text-success bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest;
+}
+
+.status-danger {
+  @apply text-danger bg-red-50 border border-red-100 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest;
+}
