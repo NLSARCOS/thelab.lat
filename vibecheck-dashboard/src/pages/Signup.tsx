@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { Shield, User, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
 
@@ -10,6 +10,14 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const selectedPlanKey = (searchParams.get('plan') || '').toLowerCase();
+  const selectedPlan = ({
+    free: 'Free',
+    pro: 'Pro',
+    enterprise: 'Enterprise',
+  } as Record<string, string>)[selectedPlanKey] || null;
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +27,24 @@ export default function Signup() {
     try {
       const res = await axios.post('/api/auth/register', { email, password, name });
       if (res.data.success) {
-        navigate('/login');
+        let token = res.data.token as string | undefined;
+        let user = res.data.user as Record<string, unknown> | undefined;
+
+        if (!token || !user) {
+          const loginRes = await axios.post('/api/auth/login', { email, password });
+          if (loginRes.data.success) {
+            token = loginRes.data.token as string;
+            user = loginRes.data.user as Record<string, unknown>;
+          }
+        }
+
+        if (!token || !user) {
+          throw new Error('Auto-login failed.');
+        }
+
+        localStorage.setItem('vb_token', token);
+        localStorage.setItem('vb_user', JSON.stringify(user));
+        navigate('/dashboard');
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Registration failed. System overloaded.');
@@ -41,6 +66,11 @@ export default function Signup() {
         </div>
 
         <div className="w-full bg-white border border-slate-200 p-10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.03)]">
+          {selectedPlan && (
+            <div className="mb-5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-center text-xs font-bold uppercase tracking-widest text-[#2563EB]">
+              Selected plan: {selectedPlan}
+            </div>
+          )}
           <form onSubmit={handleSignup} className="space-y-6">
             
             {error && (

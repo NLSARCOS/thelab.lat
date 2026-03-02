@@ -7,6 +7,8 @@ import Login from './pages/Login.tsx'
 import Signup from './pages/Signup.tsx'
 import Dashboard from './pages/Dashboard.tsx'
 import AdminDashboard from './pages/AdminDashboard.tsx'
+import Pricing from './pages/Pricing.tsx'
+import ScanReport from './pages/ScanReport.tsx'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('vb_token');
@@ -29,7 +31,9 @@ createRoot(document.getElementById('root')!).render(
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/dashboard/scan/:id" element={<ProtectedRoute><ScanReport /></ProtectedRoute>} />
         <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

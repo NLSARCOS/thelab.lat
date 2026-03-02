@@ -5,6 +5,7 @@ import {
   Key, TerminalSquare, CreditCard, Loader2, LogOut
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import TokenPurchaseModal from '../components/dashboard/TokenPurchaseModal';
 
 const api = axios.create();
 api.interceptors.request.use((config) => {
@@ -25,6 +26,7 @@ export default function Dashboard() {
   const [keyLabel, setKeyLabel] = useState('');
   const [newKey, setNewKey] = useState<string | null>(null);
   const [creatingKey, setCreatingKey] = useState(false);
+  const [purchaseModalOpen, setPurchaseModalOpen] = useState(false);
 
   useEffect(() => {
     // Verify token is valid on mount
@@ -97,6 +99,8 @@ export default function Dashboard() {
     navigate('/login');
   };
 
+  const creditsDisplay = credits === null ? '0' : credits.toLocaleString();
+
   return (
     <div className="min-h-screen bg-[#FCFCFD] text-[#09090B] flex">
       {/* Sidebar */}
@@ -145,7 +149,7 @@ export default function Dashboard() {
               <div className="text-[11px] text-slate-400 font-mono mt-1 truncate">{user.email || ''}</div>
               <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Credits</span>
-                <span className="text-sm font-black text-black">{credits ?? '...'}</span>
+                <span className="text-sm font-black text-black">{creditsDisplay}</span>
               </div>
             </div>
             <button onClick={() => refreshAll()} className="bg-black text-white px-6 py-3 rounded-xl font-black uppercase text-[11px] tracking-widest hover:bg-[#2563EB] shadow-xl transition-all active:scale-95 flex items-center gap-2">
@@ -192,7 +196,11 @@ export default function Dashboard() {
             </div>
             <div className="space-y-4 max-h-[360px] overflow-y-auto pr-2">
               {scans.map((item) => (
-                <div key={item.id} className="p-3 bg-slate-50 border border-slate-100 rounded-lg">
+                <button
+                  key={item.id}
+                  onClick={() => navigate(`/dashboard/scan/${item.id}`)}
+                  className="w-full p-3 bg-slate-50 border border-slate-100 rounded-lg text-left transition-colors hover:border-[#2563EB] hover:bg-blue-50"
+                >
                   <div className="flex justify-between items-center mb-1">
                     <span className="text-[10px] font-mono text-slate-400">
                       {new Date(item.createdAt).toLocaleDateString()}
@@ -203,7 +211,7 @@ export default function Dashboard() {
                   </div>
                   <p className="text-xs font-bold truncate text-slate-800">{item.repoUrl}</p>
                   <p className="text-[10px] text-slate-400 font-mono mt-1">Issues: {item.issuesFound}</p>
-                </div>
+                </button>
               ))}
               {scans.length === 0 && <p className="text-center text-xs text-slate-400 italic">No scans yet. Run the first audit.</p>}
             </div>
@@ -269,14 +277,18 @@ export default function Dashboard() {
               <CreditCard size={18} className="text-blue-600" />
               <div>
                 <p className="text-xs font-black uppercase tracking-widest text-slate-500">Credits Balance</p>
-                <p className="text-sm font-black text-zinc-900">{credits ?? '...'} available</p>
+                <p className="text-sm font-black text-zinc-900">{creditsDisplay} available</p>
               </div>
             </div>
-            <button className="border-2 border-black px-6 py-2 rounded-xl font-black uppercase text-[11px] tracking-widest hover:bg-black hover:text-white transition-all">
-              Add Credits
+            <button
+              onClick={() => setPurchaseModalOpen(true)}
+              className="border-2 border-black px-6 py-2 rounded-xl font-black uppercase text-[11px] tracking-widest hover:bg-black hover:text-white transition-all"
+            >
+              Buy Credits
             </button>
           </section>
         </div>
+        <TokenPurchaseModal isOpen={purchaseModalOpen} onClose={() => setPurchaseModalOpen(false)} />
       </main>
     </div>
   );
