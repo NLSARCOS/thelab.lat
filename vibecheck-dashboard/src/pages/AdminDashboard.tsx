@@ -12,13 +12,27 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user.role !== 'ADMIN') navigate('/dashboard');
-    fetchStats();
-  }, [user.role, navigate]);
+    const token = localStorage.getItem('vb_token');
+    if (!token) { navigate('/login'); return; }
+    
+    // Verify with backend
+    axios.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => {
+        if (res.data.user.role !== 'ADMIN') { navigate('/dashboard'); return; }
+        localStorage.setItem('vb_user', JSON.stringify(res.data.user));
+        fetchStats();
+      })
+      .catch(() => {
+        localStorage.removeItem('vb_token');
+        localStorage.removeItem('vb_user');
+        navigate('/login');
+      });
+  }, [navigate]);
 
   const fetchStats = async () => {
     try {
-        const res = await axios.get('https://security.thelab.lat/api/admin/stats');
+        const token = localStorage.getItem('vb_token');
+        const res = await axios.get('/api/admin/stats', { headers: { Authorization: `Bearer ${token}` } });
         setStats(res.data);
     } catch (e) { console.error(e); }
   };

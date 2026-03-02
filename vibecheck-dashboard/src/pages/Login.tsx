@@ -16,7 +16,7 @@ export default function Login() {
     setError('');
     
     try {
-      const res = await axios.post('https://security.thelab.lat/api/auth/login', { email, password });
+      const res = await axios.post('/api/auth/login', { email, password });
       if (res.data.success) {
         localStorage.setItem('vb_token', res.data.token);
         localStorage.setItem('vb_user', JSON.stringify(res.data.user));

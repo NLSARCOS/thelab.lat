@@ -26,7 +26,7 @@ export default function TokenPurchaseModal({ isOpen, onClose }: TokenPurchasePro
         setIsProcessing(true);
         try {
             // PRODUCCIÓN REAL: Crear checkout en DodoPayments
-            const res = await axios.post('https://security.thelab.lat/api/payments/create-checkout', {
+            const res = await axios.post('/api/payments/create-checkout', {
                 packageId: selectedPkg,
                 userId: "current-user-id" // Esto saldrá del auth context
             });

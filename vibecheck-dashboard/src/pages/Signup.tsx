@@ -17,7 +17,7 @@ export default function Signup() {
     setError('');
     
     try {
-      const res = await axios.post('https://security.thelab.lat/api/auth/register', { email, password, name });
+      const res = await axios.post('/api/auth/register', { email, password, name });
       if (res.data.success) {
         navigate('/login');
       }

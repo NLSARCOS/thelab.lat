@@ -1,6 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@theme {
+  --color-background: #FCFCFD;
+  --color-primary: #09090B;
+  --color-accent: #2563EB;
+  --color-danger: #EF4444;
+  --color-success: #10B981;
+}
 
 :root {
   font-family: 'Space Grotesk', sans-serif;

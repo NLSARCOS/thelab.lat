@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  scanner:
+    build: ./vibecheck-security
+    container_name: vibecheck-scanner
+    restart: unless-stopped
+    expose:
+      - "8080"
+    volumes:
+      - scanner-data:/app/data
+
+  saas:
+    build: ./vibecheck-saas
+    container_name: vibecheck-saas
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=file:/app/data/vibecheck.db
+      - JWT_SECRET=vibecheck_vault_2026_thelab_prod
+      - SCANNER_URL=http://scanner:8080
+      - PORT=8000
+    volumes:
+      - saas-data:/app/data
+    depends_on:
+      - scanner
+
+  dashboard:
+    build: ./vibecheck-dashboard
+    container_name: vibecheck-dashboard
+    restart: unless-stopped
+    ports:
+      - "3100:80"
+    depends_on:
+      - saas
+
+volumes:
+  scanner-data:
+  saas-data:

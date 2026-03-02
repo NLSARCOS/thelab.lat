@@ -1,13 +1,11 @@
 // VibeCheck Security SaaS - Prisma Schema
-// Focus: Multi-tenant, Repo Connectivity, Shield Audit History
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db" 
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -21,12 +19,15 @@ model User {
   passwordHash  String
   name          String?
   role          Role     @default(USER)
+  credits       Int      @default(5) // 5 free scans
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   organizations Organization[]
   repos         Repository[]
   shieldLogs    ShieldLog[]
+  apiKeys       ApiKey[]
+  scanHistory   AuditReport[]
 }
 
 model Organization {
@@ -43,20 +44,23 @@ model Repository {
   gitUrl    String
   ownerId   String
   owner     User     @relation(fields: [ownerId], references: [id])
-  status    String   @default("connected") // connected, scanning, vulnerable, safe
+  status    String   @default("connected")
   lastScan  DateTime?
   
-  audits    AuditReport[]
+  audits    AuditReport[] @relation("RepoAudits")
   createdAt DateTime @default(now())
 }
 
 model AuditReport {
   id            String   @id @default(cuid())
-  repoId        String
-  repo          Repository @relation(fields: [repoId], references: [id])
+  repoId        String?
+  repo          Repository? @relation("RepoAudits", fields: [repoId], references: [id])
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  repoUrl       String
   issuesFound   Int
   criticalFound Int
-  fullJson      String   // Los detalles de las vulnerabilidades
+  fullJson      String
   createdAt     DateTime @default(now())
 }
 
@@ -66,7 +70,18 @@ model ShieldLog {
   user            User     @relation(fields: [userId], references: [id])
   promptPreview   String
   riskScore       Int
-  status          String   // BLOCKED, CLEAN
+  status          String
   ruleMatched     String?
   createdAt       DateTime @default(now())
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  key       String   @unique
+  lastUsed  DateTime?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
 }

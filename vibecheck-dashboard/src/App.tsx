@@ -16,7 +16,7 @@ export default function Landing() {
 
   const fetchHistory = async () => {
     try {
-        const res = await fetch("http://localhost:8080/v1/scanner/history");
+        const res = await fetch("/api/scanner/history");
         const data = await res.json();
         setHistory(data);
     } catch (e) { console.error(e); }
@@ -28,10 +28,10 @@ export default function Landing() {
     setAuditOutput(["> Initializing VFS_BRIDGE...", `> Accessing: ${repoPath}`]);
     
     try {
-        const response = await fetch("http://localhost:8080/v1/scanner/audit", {
+        const response = await fetch("/api/scanner/audit", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ repoPath: repoPath })
+            body: JSON.stringify({ repoUrl: repoPath })
         });
         const data = await response.json();
         
