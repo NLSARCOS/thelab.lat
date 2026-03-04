@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeCheck Security — AI Code Security Scanner</title>
+    <meta name="description" content="Scan your AI-powered codebase for security vulnerabilities in seconds. 20 AI security rules. Real-time reports.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { font-family: 'Space Grotesk', sans-serif; scroll-behavior: smooth; box-sizing: border-box; }
+        body { background: #FCFCFD; color: #09090B; overflow-x: hidden; }
+        .noise { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('https://grainy-gradients.vercel.app/noise.svg'); opacity: 0.04; pointer-events: none; z-index: 9999; }
+        .hero-title { font-size: clamp(2.6rem, 9vw, 8rem); line-height: 0.88; letter-spacing: -0.05em; font-weight: 900; }
+        .glass-card { background: #fff; border: 1px solid #E4E4E7; box-shadow: 0 4px 24px rgba(0,0,0,0.04); transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); }
+        .glass-card:hover { transform: translateY(-6px); border-color: #09090B; }
+        .btn-primary { background: #09090B; color: #fff; border-radius: 100px; padding: 1rem 2.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; transition: all 0.3s; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .btn-primary:hover { background: #2563EB; transform: scale(1.02); }
+        .btn-outline { border: 2px solid #09090B; color: #09090B; border-radius: 100px; padding: 1rem 2.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; transition: all 0.3s; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .btn-outline:hover { background: #09090B; color: #fff; }
+        .plan-card { border: 1px solid #E4E4E7; border-radius: 2rem; padding: 2.5rem; background: #fff; transition: all 0.3s; }
+        .plan-card.featured { border-color: #09090B; background: #09090B; color: #fff; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+        .plan-card:not(.featured):hover { border-color: #09090B; transform: translateY(-4px); }
+        .terminal { background: #09090B; border-radius: 1.5rem; font-family: 'Courier New', monospace; font-size: 13px; padding: 1.5rem; color: #4ADE80; }
+        .section-fade { opacity: 0; transform: translateY(40px); transition: all 0.7s ease; }
+        .section-fade.visible { opacity: 1; transform: translateY(0); }
+        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; }
+        .hamburger span { display: block; width: 22px; height: 2px; background: #09090B; border-radius: 2px; }
+        .mobile-menu { display: none; position: fixed; inset: 0; background: #FCFCFD; z-index: 9000; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; }
+        .mobile-menu.open { display: flex; }
+        .mobile-menu a { font-size: 1.4rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.08em; }
+        .lang-switcher { display: flex; gap: 0.5rem; align-items: center; }
+        .lang-btn { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15em; padding: 0.3rem 0.8rem; border-radius: 100px; border: 1px solid #E4E4E7; cursor: pointer; transition: all 0.2s; background: transparent; }
+        .lang-btn.active { background: #09090B; color: #fff; border-color: #09090B; }
+        @media (max-width: 768px) { .hamburger { display: flex; } .desktop-nav { display: none !important; } }
+    </style>
+</head>
+<body>
+<div class="noise"></div>
+
+<!-- NAV -->
+<nav class="fixed top-0 left-0 right-0 z-[1000] bg-white/90 backdrop-blur-md border-b border-zinc-100">
+    <div class="max-w-6xl mx-auto px-5 py-4 flex justify-between items-center">
+        <div>
+            <div class="text-[11px] font-black uppercase tracking-[0.3em]">VibeCheck<span class="opacity-30"> Security</span></div>
+            <div class="text-[9px] font-black tracking-widest text-zinc-400 mt-0.5">by TheLab.lat</div>
+        </div>
+        <div class="desktop-nav flex gap-8 text-[10px] font-black uppercase tracking-widest">
+            <a href="#features" class="hover:opacity-40 transition-opacity" data-i18n="nav_features">Features</a>
+            <a href="#pricing" class="hover:opacity-40 transition-opacity" data-i18n="nav_pricing">Pricing</a>
+            <a href="#demo" class="hover:opacity-40 transition-opacity" data-i18n="nav_demo">Demo</a>
+            <a href="https://thelab.lat" class="hover:opacity-40 transition-opacity">TheLab</a>
+        </div>
+        <div class="desktop-nav flex gap-3 items-center">
+            <div class="lang-switcher mr-2">
+                <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+                <button class="lang-btn" id="btn-es" onclick="setLang('es')">ES</button>
+            </div>
+            <a href="/login" class="text-[10px] font-black uppercase tracking-widest hover:opacity-50 transition-opacity" data-i18n="nav_signin">Sign in</a>
+            <a href="/signup" class="btn-primary text-[10px] py-3 px-6" data-i18n="nav_start">Start Free</a>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="lang-switcher sm:hidden">
+                <button class="lang-btn" onclick="setLang('en')">EN</button>
+                <button class="lang-btn" onclick="setLang('es')">ES</button>
+            </div>
+            <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+        </div>
+    </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobile-menu">
+    <button id="close-menu" class="absolute top-5 right-5 text-3xl font-black">&times;</button>
+    <a href="#features" class="mobile-link" data-i18n="nav_features">Features</a>
+    <a href="#pricing" class="mobile-link" data-i18n="nav_pricing">Pricing</a>
+    <a href="#demo" class="mobile-link" data-i18n="nav_demo">Demo</a>
+    <a href="/login" class="mobile-link" data-i18n="nav_signin">Sign In</a>
+    <a href="/signup" class="btn-primary mt-4" data-i18n="nav_start">Start Free</a>
+</div>
+
+<main class="pt-16">
+
+    <!-- HERO -->
+    <section id="hero" class="min-h-[90vh] flex flex-col justify-end px-5 sm:px-10 lg:px-16 pb-12 sm:pb-20">
+        <div class="max-w-6xl mx-auto w-full section-fade">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-8 sm:w-12 h-px bg-zinc-900"></div>
+                <span class="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.4em] text-zinc-400" data-i18n="hero_badge">AI Security Scanner</span>
+            </div>
+            <h1 class="hero-title mb-8 sm:mb-12">
+                <span data-i18n="hero_h1_1">YOUR AI CODE</span><br/>
+                <span data-i18n="hero_h1_2">HAS BLIND</span><br/>
+                <span class="opacity-20" data-i18n="hero_h1_3">SPOTS.</span>
+            </h1>
+            <div class="flex flex-col sm:flex-row sm:items-end gap-8 sm:gap-16">
+                <p class="text-lg sm:text-xl lg:text-2xl font-light text-zinc-500 leading-relaxed max-w-lg" data-i18n="hero_sub">
+                    VibeCheck scans your vibe-coded repos with 20 AI security rules and catches vulnerabilities before they ship. Fast, brutal, accurate.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 shrink-0">
+                    <a href="/signup" class="btn-primary justify-center" data-i18n="hero_cta1">Scan Free Now <i class="fas fa-shield-halved text-xs"></i></a>
+                    <a href="#demo" class="btn-outline justify-center" data-i18n="hero_cta2">Live Demo <i class="fas fa-play text-xs"></i></a>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-6 mt-10 sm:mt-14 text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                <span><i class="fas fa-check text-emerald-500 mr-1"></i> <span data-i18n="trust_1">No credit card</span></span>
+                <span><i class="fas fa-check text-emerald-500 mr-1"></i> <span data-i18n="trust_2">5 free scans</span></span>
+                <span><i class="fas fa-check text-emerald-500 mr-1"></i> <span data-i18n="trust_3">2-min setup</span></span>
+                <span><i class="fas fa-check text-emerald-500 mr-1"></i> <span data-i18n="trust_4">GitHub URLs supported</span></span>
+            </div>
+        </div>
+    </section>
+
+    <div class="h-px bg-gradient-to-r from-transparent via-zinc-200 to-transparent"></div>
+
+    <!-- STATS -->
+    <section class="py-14 sm:py-20 px-5 sm:px-10 lg:px-16 bg-white">
+        <div class="max-w-6xl mx-auto section-fade grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-10">
+            <div class="text-center"><p class="text-3xl sm:text-5xl font-black tracking-tighter">20</p><p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-2" data-i18n="stat_1">AI Security Rules</p></div>
+            <div class="text-center"><p class="text-3xl sm:text-5xl font-black tracking-tighter">4ms</p><p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-2" data-i18n="stat_2">Avg Response</p></div>
+            <div class="text-center"><p class="text-3xl sm:text-5xl font-black tracking-tighter">98%</p><p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-2" data-i18n="stat_3">Detection Rate</p></div>
+            <div class="text-center"><p class="text-3xl sm:text-5xl font-black tracking-tighter">$0</p><p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-2" data-i18n="stat_4">To Start</p></div>
+        </div>
+    </section>
+
+    <div class="h-px bg-gradient-to-r from-transparent via-zinc-200 to-transparent"></div>
+
+    <!-- CALCULADORA -->
+    <section class="py-20 sm:py-32 px-5 sm:px-10 lg:px-16">
+        <div class="max-w-6xl mx-auto section-fade">
+            <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                <!-- Left text -->
+                <div class="space-y-6">
+                    <span class="text-xs font-black uppercase text-blue-600 tracking-[0.4em]" data-i18n="calc_label">ROI Calculator // 01</span>
+                    <h2 class="text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tighter leading-[0.88]">
+                        <span data-i18n="calc_h2_1">How much</span><br/>
+                        <span class="opacity-20" data-i18n="calc_h2_2">are leaks costing you?</span>
+                    </h2>
+                    <p class="text-base sm:text-lg text-zinc-500 font-light leading-relaxed max-w-md" data-i18n="calc_sub">
+                        A single exposed API key can cost thousands overnight. Move your prompt volume through VibeCheck Shield and see what you save.
+                    </p>
+                    <div class="flex gap-10">
+                        <div>
+                            <p class="text-3xl sm:text-4xl font-black tracking-tighter text-zinc-900">$0.05</p>
+                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1" data-i18n="calc_per">per 1K prompts</p>
+                        </div>
+                        <div>
+                            <p class="text-3xl sm:text-4xl font-black tracking-tighter text-emerald-500">∞</p>
+                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1" data-i18n="calc_save">potential savings</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calculator card -->
+                <div class="glass-card p-7 sm:p-10 rounded-3xl">
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-8" data-i18n="calc_title">Loss Prevention Calculator</h3>
+                    <div class="space-y-8">
+                        <!-- Slider -->
+                        <div>
+                            <input type="range" min="10" max="5000" step="10" id="calcRange" value="500"
+                                style="-webkit-appearance:none;width:100%;height:4px;background:#E4E4E7;border-radius:4px;outline:none;"
+                                oninput="updateCalc(this.value)">
+                            <div class="flex justify-between mt-4 text-[10px] font-black uppercase text-zinc-500">
+                                <span data-i18n="calc_invoc">Monthly Invocations:</span>
+                                <span><span id="calcLabel">500</span>K &nbsp;<span class="text-emerald-500" data-i18n="calc_verified">Verified</span></span>
+                            </div>
+                        </div>
+
+                        <!-- Cost cards -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-5 sm:p-7 bg-zinc-50 rounded-2xl border border-zinc-100">
+                                <span class="text-[9px] font-black text-zinc-400 uppercase block mb-2 tracking-widest" data-i18n="calc_risky">Without Shield</span>
+                                <span class="text-2xl sm:text-3xl font-black tracking-tighter text-red-500" id="calcRisky">$15.00</span>
+                                <span class="block text-[9px] text-zinc-400 mt-1 font-bold uppercase tracking-widest" data-i18n="calc_risk_sub">avg breach exposure</span>
+                            </div>
+                            <div class="p-5 sm:p-7 bg-zinc-900 rounded-2xl shadow-xl">
+                                <span class="text-[9px] font-black text-zinc-500 uppercase block mb-2 tracking-widest" data-i18n="calc_shield">With VibeCheck</span>
+                                <span class="text-2xl sm:text-3xl font-black tracking-tighter text-white" id="calcSafe">$0.25</span>
+                                <span class="block text-[9px] text-emerald-400 mt-1 font-bold uppercase tracking-widest" data-i18n="calc_safe_sub">full protection</span>
+                            </div>
+                        </div>
+
+                        <!-- Savings bar -->
+                        <div>
+                            <div class="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
+                                <span class="text-zinc-400" data-i18n="calc_you_save">You save</span>
+                                <span class="text-emerald-500" id="calcSavings">$14.75</span>
+                            </div>
+                            <div class="h-2 w-full bg-zinc-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-emerald-500 rounded-full transition-all duration-300" id="calcBar" style="width:98%"></div>
+                            </div>
+                        </div>
+
+                        <a href="/signup" class="w-full py-4 bg-zinc-900 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-blue-600 transition-all text-sm flex items-center justify-center gap-2" data-i18n="calc_cta">
+                            Start protecting for free <i class="fas fa-shield-halved text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="h-px bg-gradient-to-r from-transparent via-zinc-200 to-transparent"></div>
+
+    <!-- FEATURES -->
+    <section id="features" class="py-20 sm:py-32 px-5 sm:px-10 lg:px-16">
+        <div class="max-w-6xl mx-auto section-fade">
+            <div class="mb-12 sm:mb-20">
+                <span class="text-xs font-black uppercase text-blue-600 tracking-[0.4em]" data-i18n="feat_label">What We Catch // 02</span>
+                <h2 class="text-4xl sm:text-6xl lg:text-7xl font-black uppercase tracking-tighter leading-[0.88] mt-4">
+                    <span data-i18n="feat_h2_1">Security that</span><br/><span class="opacity-20" data-i18n="feat_h2_2">ships with you.</span>
+                </h2>
+            </div>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div class="glass-card p-7 rounded-2xl">
+                    <div class="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center mb-5"><i class="fas fa-key text-red-500 text-sm"></i></div>
+                    <h4 class="font-black uppercase tracking-tight text-lg mb-2" data-i18n="f1_title">Secret Leakage</h4>
+                    <p class="text-zinc-500 font-light text-sm leading-relaxed" data-i18n="f1_desc">Detects hardcoded API keys, tokens, and passwords. OpenAI, AWS, GitHub patterns covered.</p>
+                </div>
+                <div class="glass-card p-7 rounded-2xl">
+                    <div class="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center mb-5"><i class="fas fa-syringe text-orange-500 text-sm"></i></div>
+                    <h4 class="font-black uppercase tracking-tight text-lg mb-2" data-i18n="f2_title">Prompt Injection</h4>
+                    <p class="text-zinc-500 font-light text-sm leading-relaxed" data-i18n="f2_desc">Catches direct user input going straight into LLM prompts without sanitization.</p>
+                </div>
+                <div class="glass-card p-7 rounded-2xl">
+                    <div class="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center mb-5"><i class="fas fa-code text-purple-500 text-sm"></i></div>
+                    <h4 class="font-black uppercase tracking-tight text-lg mb-2" data-i18n="f3_title">Code Execution</h4>
+                    <p class="text-zinc-500 font-light text-sm leading-relaxed" data-i18n="f3_desc">Flags eval(), dynamic functions and shell execs that could run LLM output as code.</p>
+                </div>
+                <div class="glass-card p-7 rounded-2xl">
+                    <div class="w-10 h-10 bg-yellow-50 rounded-xl flex items-center justify-center mb-5"><i class="fas fa-eye text-yellow-500 text-sm"></i></div>
+                    <h4 class="font-black uppercase tracking-tight text-lg mb-2" data-i18n="f4_title">Data Logging</h4>
+                    <p class="text-zinc-500 font-light text-sm leading-relaxed" data-i18n="f4_desc">Finds sensitive prompts and user data being logged — a GDPR ticking bomb.</p>
+                </div>
+                <div class="glass-card p-7 rounded-2xl">
+                    <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center mb-5"><i class="fas fa-globe text-blue-500 text-sm"></i></div>
+                    <h4 class="font-black uppercase tracking-tight text-lg mb-2" data-i18n="f5_title">CORS & Auth Gaps</h4>
+                    <p class="text-zinc-500 font-light text-sm leading-relaxed" data-i18n="f5_desc">Wildcard CORS and unprotected AI endpoints that anyone on the internet can hit.</p>
+                </div>
+                <div class="glass-card p-7 rounded-2xl">
+                    <div class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center mb-5"><i class="fas fa-shield-halved text-emerald-500 text-sm"></i></div>
+                    <h4 class="font-black uppercase tracking-tight text-lg mb-2" data-i18n="f6_title">Prompt Shield</h4>
+                    <p class="text-zinc-500 font-light text-sm leading-relaxed" data-i18n="f6_desc">Real-time firewall API that blocks jailbreak attempts before they reach your model.</p>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <span class="text-[10px] font-black uppercase tracking-widest text-zinc-400" data-i18n="feat_more">+ 14 more rules including supply chain, PII leakage, WebSocket auth, unsafe deserialization</span>
+            </div>
+        </div>
+    </section>
+
+    <div class="h-px bg-gradient-to-r from-transparent via-zinc-200 to-transparent"></div>
+
+    <!-- HOW IT WORKS -->
+    <section class="py-20 sm:py-32 px-5 sm:px-10 lg:px-16 bg-white">
+        <div class="max-w-6xl mx-auto section-fade">
+            <div class="mb-12 sm:mb-20">
+                <span class="text-xs font-black uppercase text-blue-600 tracking-[0.4em]" data-i18n="how_label">Process // 03</span>
+                <h2 class="text-4xl sm:text-6xl font-black uppercase tracking-tighter leading-[0.88] mt-4">
+                    <span data-i18n="how_h2_1">Three steps.</span><br/><span class="opacity-20" data-i18n="how_h2_2">Zero excuses.</span>
+                </h2>
+            </div>
+            <div class="grid sm:grid-cols-3 gap-6 sm:gap-8">
+                <div class="glass-card p-8 rounded-2xl">
+                    <div class="text-5xl font-black text-zinc-100 mb-4">01</div>
+                    <h4 class="font-black uppercase tracking-tight text-xl mb-3" data-i18n="how_1_title">Paste URL</h4>
+                    <p class="text-zinc-500 font-light leading-relaxed" data-i18n="how_1_desc">Drop in any public GitHub URL. No install, no setup, no BS.</p>
+                </div>
+                <div class="glass-card p-8 rounded-2xl">
+                    <div class="text-5xl font-black text-zinc-100 mb-4">02</div>
+                    <h4 class="font-black uppercase tracking-tight text-xl mb-3" data-i18n="how_2_title">AI Scans</h4>
+                    <p class="text-zinc-500 font-light leading-relaxed" data-i18n="how_2_desc">Our engine clones and runs 20 security rules across every file in under 2 minutes.</p>
+                </div>
+                <div class="glass-card p-8 rounded-2xl">
+                    <div class="text-5xl font-black text-zinc-100 mb-4">03</div>
+                    <h4 class="font-black uppercase tracking-tight text-xl mb-3" data-i18n="how_3_title">Get Report</h4>
+                    <p class="text-zinc-500 font-light leading-relaxed" data-i18n="how_3_desc">Severity-ranked findings with line numbers, descriptions, and fix suggestions. We email it too.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="h-px bg-gradient-to-r from-transparent via-zinc-200 to-transparent"></div>
+
+    <!-- DEMO -->
+    <section id="demo" class="py-20 sm:py-32 px-5 sm:px-10 lg:px-16">
+        <div class="max-w-6xl mx-auto section-fade">
+            <div class="mb-10 sm:mb-16">
+                <span class="text-xs font-black uppercase text-blue-600 tracking-[0.4em]" data-i18n="demo_label">Try it // 04</span>
+                <h2 class="text-4xl sm:text-6xl font-black uppercase tracking-tighter leading-[0.88] mt-4">
+                    <span data-i18n="demo_h2_1">Live scanner.</span><br/><span class="opacity-20" data-i18n="demo_h2_2">Free. Right now.</span>
+                </h2>
+            </div>
+            <div class="grid lg:grid-cols-[1.4fr_0.6fr] gap-8">
+                <div class="glass-card p-7 sm:p-10 rounded-3xl">
+                    <div class="flex flex-col sm:flex-row gap-3 mb-6">
+                        <input id="demoInput" type="text" data-i18n-placeholder="demo_placeholder"
+                            placeholder="https://github.com/user/repo"
+                            class="flex-1 bg-zinc-50 border border-zinc-200 rounded-2xl px-5 py-4 text-sm outline-none focus:border-zinc-900 transition-all font-mono"/>
+                        <button id="demoBtn" onclick="runDemo()" class="btn-primary justify-center text-sm py-4 px-8 rounded-2xl whitespace-nowrap">
+                            <i class="fas fa-shield-halved"></i> <span data-i18n="demo_btn">Run Scan</span>
+                        </button>
+                    </div>
+                    <div class="terminal h-64 overflow-y-auto" id="terminalOutput">
+                        <div class="text-zinc-500">// VIBECHECK ENGINE v1.3.0</div>
+                        <div class="text-emerald-400 mt-1">&gt; <span data-i18n="term_ready">Neural bridge established.</span></div>
+                        <div class="text-zinc-500 mt-1">&gt; <span data-i18n="term_wait">Waiting for target repository...</span></div>
+                    </div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-zinc-300 mt-4 text-center">
+                        <span data-i18n="demo_note">Public repos only in demo mode</span> · <a href="/signup" class="underline hover:text-zinc-500" data-i18n="demo_note_link">Sign up for private repo access</a>
+                    </p>
+                </div>
+                <div class="glass-card p-7 rounded-3xl border-dashed">
+                    <h3 class="text-sm font-black uppercase tracking-widest mb-6" data-i18n="demo_history">Recent Scans</h3>
+                    <div id="scanHistory" class="space-y-3 max-h-64 overflow-y-auto">
+                        <p class="text-xs text-zinc-400 italic" data-i18n="demo_empty">No scans yet.</p>
+                    </div>
+                    <div class="mt-6 pt-5 border-t border-zinc-100">
+                        <div class="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2" data-i18n="trust_index">Trust Index</div>
+                        <div class="h-1.5 w-full bg-zinc-100 rounded-full overflow-hidden"><div class="h-full bg-emerald-500 w-[94%] rounded-full"></div></div>
+                        <div class="flex justify-between text-[10px] font-black mt-1.5 font-mono">
+                            <span class="text-zinc-400" data-i18n="trust_sys">SYSTEM INTEGRITY</span><span>94%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="h-px bg-gradient-to-r from-transparent via-zinc-200 to-transparent"></div>
+
+    <!-- PRICING -->
+    <section id="pricing" class="py-20 sm:py-32 px-5 sm:px-10 lg:px-16 bg-white">
+        <div class="max-w-6xl mx-auto section-fade">
+            <div class="mb-12 sm:mb-20">
+                <span class="text-xs font-black uppercase text-blue-600 tracking-[0.4em]" data-i18n="price_label">Pricing // 05</span>
+                <h2 class="text-4xl sm:text-6xl font-black uppercase tracking-tighter leading-[0.88] mt-4">
+                    <span data-i18n="price_h2_1">Simple.</span><br/><span class="opacity-20" data-i18n="price_h2_2">No surprises.</span>
+                </h2>
+            </div>
+            <div class="grid sm:grid-cols-3 gap-5 sm:gap-6">
+                <!-- Free -->
+                <div class="plan-card">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4" data-i18n="plan_free">Free</div>
+                    <div class="text-5xl font-black tracking-tighter mb-1">$0</div>
+                    <div class="text-sm text-zinc-400 mb-8" data-i18n="plan_free_sub">Forever</div>
+                    <ul class="space-y-3 text-sm mb-10">
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-emerald-500 text-xs"></i> <span data-i18n="plan_f1">5 repo scans</span></li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-emerald-500 text-xs"></i> <span data-i18n="plan_f2">Basic report</span></li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-emerald-500 text-xs"></i> <span data-i18n="plan_f3">Public repos</span></li>
+                        <li class="flex items-center gap-2 opacity-30"><i class="fas fa-times text-xs"></i> <span data-i18n="plan_f4">API access</span></li>
+                        <li class="flex items-center gap-2 opacity-30"><i class="fas fa-times text-xs"></i> <span data-i18n="plan_f5">Email alerts</span></li>
+                    </ul>
+                    <a href="/signup?plan=free" class="btn-outline w-full justify-center text-sm py-3.5" data-i18n="plan_cta_free">Get Started</a>
+                </div>
+                <!-- Pro -->
+                <div class="plan-card featured">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-4" data-i18n="plan_pro">Pro — Most Popular</div>
+                    <div class="text-5xl font-black tracking-tighter mb-1">$9</div>
+                    <div class="text-sm text-zinc-400 mb-8" data-i18n="plan_pro_sub">per month</div>
+                    <ul class="space-y-3 text-sm mb-10">
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-emerald-400 text-xs"></i> <span data-i18n="plan_p1">100 scans/month</span></li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-emerald-400 text-xs"></i> <span data-i18n="plan_p2">Full detailed report</span></li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-emerald-400 text-xs"></i> <span data-i18n="plan_p3">API key access</span></li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-emerald-400 text-xs"></i> <span data-i18n="plan_p4">Email alerts</span></li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-emerald-400 text-xs"></i> <span data-i18n="plan_p5">Scan history</span></li>
+                    </ul>
+                    <a href="/signup?plan=pro" class="w-full justify-center text-sm py-3.5 rounded-full font-black uppercase tracking-widest bg-white text-zinc-900 hover:bg-zinc-100 transition-all flex items-center gap-2" data-i18n="plan_cta_pro">Start Pro <i class="fas fa-arrow-right text-xs"></i></a>
+                </div>
+                <!-- Enterprise -->
+                <div class="plan-card">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4" data-i18n="plan_ent">Enterprise</div>
+                    <div class="text-5xl font-black tracking-tighter mb-1">$29</div>
+                    <div class="text-sm text-zinc-400 mb-8" data-i18n="plan_ent_sub">per month</div>
+                    <ul class="space-y-3 text-sm mb-10">
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-emerald-500 text-xs"></i> <span data-i18n="plan_e1">Unlimited scans</span></li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-emerald-500 text-xs"></i> <span data-i18n="plan_e2">Everything in Pro</span></li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-emerald-500 text-xs"></i> <span data-i18n="plan_e3">Team access</span></li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-emerald-500 text-xs"></i> <span data-i18n="plan_e4">Webhooks & CI</span></li>
+                        <li class="flex items-center gap-2"><i class="fas fa-check text-emerald-500 text-xs"></i> <span data-i18n="plan_e5">Priority support</span></li>
+                    </ul>
+                    <a href="/signup?plan=enterprise" class="btn-outline w-full justify-center text-sm py-3.5" data-i18n="plan_cta_ent">Go Enterprise</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="h-px bg-gradient-to-r from-transparent via-zinc-200 to-transparent"></div>
+
+    <!-- TESTIMONIALS -->
+    <section class="py-20 sm:py-32 px-5 sm:px-10 lg:px-16">
+        <div class="max-w-6xl mx-auto section-fade">
+            <div class="mb-12 sm:mb-16">
+                <span class="text-xs font-black uppercase text-blue-600 tracking-[0.4em]" data-i18n="testi_label">From the field // 06</span>
+                <h2 class="text-4xl sm:text-5xl font-black uppercase tracking-tighter leading-[0.88] mt-4">
+                    <span data-i18n="testi_h2_1">Teams that</span><br/><span class="opacity-20" data-i18n="testi_h2_2">ship safer.</span>
+                </h2>
+            </div>
+            <div class="grid sm:grid-cols-3 gap-5">
+                <div class="glass-card p-7 rounded-2xl">
+                    <div class="text-3xl text-zinc-100 font-black mb-4">"</div>
+                    <p class="text-sm text-zinc-600 leading-relaxed mb-6" data-i18n="t1_quote">We caught prompt injection attacks our entire appsec stack missed. VibeCheck paid for itself in a week.</p>
+                    <div><div class="font-black text-sm">Ari P.</div><div class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">CTO, LatticeForge</div></div>
+                </div>
+                <div class="glass-card p-7 rounded-2xl">
+                    <div class="text-3xl text-zinc-100 font-black mb-4">"</div>
+                    <p class="text-sm text-zinc-600 leading-relaxed mb-6" data-i18n="t2_quote">Fits perfectly in our CI pipeline. Reports are crisp, executive-ready, and genuinely useful.</p>
+                    <div><div class="font-black text-sm">Dana K.</div><div class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Head of DevOps, Brightloop</div></div>
+                </div>
+                <div class="glass-card p-7 rounded-2xl">
+                    <div class="text-3xl text-zinc-100 font-black mb-4">"</div>
+                    <p class="text-sm text-zinc-600 leading-relaxed mb-6" data-i18n="t3_quote">We ship AI features fast. VibeCheck is the safety net that keeps our users data safe.</p>
+                    <div><div class="font-black text-sm">Miguel R.</div><div class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">VP Engineering, AlloyLabs</div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="py-20 sm:py-28 px-5 sm:px-10 lg:px-16 mb-10">
+        <div class="max-w-6xl mx-auto section-fade">
+            <div class="bg-zinc-900 text-white rounded-3xl sm:rounded-[3rem] p-10 sm:p-16 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
+                <div>
+                    <div class="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-4" data-i18n="cta_eyebrow">Ready to ship safe?</div>
+                    <h2 class="text-3xl sm:text-5xl font-black uppercase tracking-tighter leading-[0.88]">
+                        <span data-i18n="cta_h2_1">Start scanning.</span><br/><span data-i18n="cta_h2_2">It's free.</span>
+                    </h2>
+                </div>
+                <div class="flex flex-col gap-4 shrink-0 w-full sm:w-auto">
+                    <a href="/signup" class="bg-white text-zinc-900 btn-primary justify-center hover:bg-zinc-100" data-i18n="cta_btn">Create Free Account <i class="fas fa-arrow-right text-xs"></i></a>
+                    <a href="/login" class="text-center text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white transition-colors" data-i18n="cta_login">Already have an account? Sign in</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="py-10 px-5 border-t border-zinc-100">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300">VibeCheck Security // TheLab.lat // 2026</div>
+        <div class="flex gap-6 text-[10px] font-black uppercase tracking-widest text-zinc-300">
+            <a href="https://thelab.lat" class="hover:text-zinc-600 transition-colors">TheLab</a>
+            <a href="/signup" class="hover:text-zinc-600 transition-colors" data-i18n="nav_start">Sign Up</a>
+            <a href="/login" class="hover:text-zinc-600 transition-colors" data-i18n="nav_signin">Login</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+// ─── TRANSLATIONS ────────────────────────────────────────────
+const i18n = {
+  en: {
+    nav_features:'Features', nav_pricing:'Pricing', nav_demo:'Demo', nav_signin:'Sign in', nav_start:'Start Free',
+    hero_badge:'AI Security Scanner',
+    hero_h1_1:'YOUR AI CODE', hero_h1_2:'HAS BLIND', hero_h1_3:'SPOTS.',
+    hero_sub:'VibeCheck scans your vibe-coded repos with 20 AI security rules and catches vulnerabilities before they ship. Fast, brutal, accurate.',
+    hero_cta1:'Scan Free Now', hero_cta2:'Live Demo',
+    trust_1:'No credit card', trust_2:'5 free scans', trust_3:'2-min setup', trust_4:'GitHub URLs supported',
+    calc_label:'ROI Calculator // 01', calc_h2_1:'How much', calc_h2_2:'are leaks costing you?',
+    calc_sub:'A single exposed API key can cost thousands overnight. Move your prompt volume through VibeCheck Shield and see what you save.',
+    calc_per:'per 1K prompts', calc_save:'potential savings', calc_title:'Loss Prevention Calculator',
+    calc_invoc:'Monthly Invocations:', calc_verified:'Verified',
+    calc_risky:'Without Shield', calc_risk_sub:'avg breach exposure',
+    calc_shield:'With VibeCheck', calc_safe_sub:'full protection',
+    calc_you_save:'You save', calc_cta:'Start protecting for free',
+    stat_1:'AI Security Rules', stat_2:'Avg Response', stat_3:'Detection Rate', stat_4:'To Start',
+    feat_label:'What We Catch // 02', feat_h2_1:'Security that', feat_h2_2:'ships with you.',
+    f1_title:'Secret Leakage', f1_desc:'Detects hardcoded API keys, tokens, and passwords. OpenAI, AWS, GitHub patterns covered.',
+    f2_title:'Prompt Injection', f2_desc:'Catches direct user input going straight into LLM prompts without sanitization.',
+    f3_title:'Code Execution', f3_desc:'Flags eval(), dynamic functions and shell execs that could run LLM output as code.',
+    f4_title:'Data Logging', f4_desc:'Finds sensitive prompts and user data being logged — a GDPR ticking bomb.',
+    f5_title:'CORS & Auth Gaps', f5_desc:'Wildcard CORS and unprotected AI endpoints that anyone on the internet can hit.',
+    f6_title:'Prompt Shield', f6_desc:'Real-time firewall API that blocks jailbreak attempts before they reach your model.',
+    feat_more:'+ 14 more rules including supply chain, PII leakage, WebSocket auth, unsafe deserialization',
+    how_label:'Process // 03', how_h2_1:'Three steps.', how_h2_2:'Zero excuses.',
+    how_1_title:'Paste URL', how_1_desc:'Drop in any public GitHub URL. No install, no setup, no BS.',
+    how_2_title:'AI Scans', how_2_desc:'Our engine clones and runs 20 security rules across every file in under 2 minutes.',
+    how_3_title:'Get Report', how_3_desc:'Severity-ranked findings with line numbers, descriptions, and fix suggestions. We email it too.',
+    demo_label:'Try it // 04', demo_h2_1:'Live scanner.', demo_h2_2:'Free. Right now.',
+    demo_placeholder:'https://github.com/user/repo', demo_btn:'Run Scan',
+    term_ready:'Neural bridge established.', term_wait:'Waiting for target repository...',
+    demo_note:'Public repos only in demo mode', demo_note_link:'Sign up for private repo access',
+    demo_history:'Recent Scans', demo_empty:'No scans yet.',
+    trust_index:'Trust Index', trust_sys:'SYSTEM INTEGRITY',
+    price_label:'Pricing // 05', price_h2_1:'Simple.', price_h2_2:'No surprises.',
+    plan_free:'Free', plan_free_sub:'Forever',
+    plan_f1:'5 repo scans', plan_f2:'Basic report', plan_f3:'Public repos', plan_f4:'API access', plan_f5:'Email alerts',
+    plan_cta_free:'Get Started',
+    plan_pro:'Pro — Most Popular', plan_pro_sub:'per month',
+    plan_p1:'100 scans/month', plan_p2:'Full detailed report', plan_p3:'API key access', plan_p4:'Email alerts', plan_p5:'Scan history',
+    plan_cta_pro:'Start Pro',
+    plan_ent:'Enterprise', plan_ent_sub:'per month',
+    plan_e1:'Unlimited scans', plan_e2:'Everything in Pro', plan_e3:'Team access', plan_e4:'Webhooks & CI', plan_e5:'Priority support',
+    plan_cta_ent:'Go Enterprise',
+    testi_label:'From the field // 06', testi_h2_1:'Teams that', testi_h2_2:'ship safer.',
+    t1_quote:'We caught prompt injection attacks our entire appsec stack missed. VibeCheck paid for itself in a week.',
+    t2_quote:'Fits perfectly in our CI pipeline. Reports are crisp, executive-ready, and genuinely useful.',
+    t3_quote:'We ship AI features fast. VibeCheck is the safety net that keeps our users data safe.',
+    cta_eyebrow:'Ready to ship safe?', cta_h2_1:'Start scanning.', cta_h2_2:"It's free.",
+    cta_btn:'Create Free Account', cta_login:'Already have an account? Sign in',
+  },
+  es: {
+    nav_features:'Funciones', nav_pricing:'Precios', nav_demo:'Demo', nav_signin:'Iniciar sesión', nav_start:'Comenzar Gratis',
+    hero_badge:'Escáner de Seguridad IA',
+    hero_h1_1:'TU CÓDIGO IA', hero_h1_2:'TIENE PUNTOS', hero_h1_3:'CIEGOS.',
+    hero_sub:'VibeCheck analiza tus repositorios vibe-coded con 20 reglas de seguridad IA y detecta vulnerabilidades antes de que lleguen a producción. Rápido, preciso, brutal.',
+    hero_cta1:'Escanear Gratis', hero_cta2:'Demo en Vivo',
+    trust_1:'Sin tarjeta de crédito', trust_2:'5 escaneos gratis', trust_3:'Listo en 2 minutos', trust_4:'URLs de GitHub compatibles',
+    calc_label:'ROI Calculator // 01', calc_h2_1:'¿Cuánto te', calc_h2_2:'cuestan las brechas?',
+    calc_sub:'Una API key expuesta puede costarte miles en una noche. Pasa tu volumen de prompts por VibeCheck Shield y mira lo que ahorras.',
+    calc_per:'por 1K prompts', calc_save:'ahorro potencial', calc_title:'Calculadora de Pérdidas',
+    calc_invoc:'Invocaciones mensuales:', calc_verified:'Verificado',
+    calc_risky:'Sin Escudo', calc_risk_sub:'exposición media a brechas',
+    calc_shield:'Con VibeCheck', calc_safe_sub:'protección total',
+    calc_you_save:'Ahorras', calc_cta:'Empieza a protegerte gratis',
+    stat_1:'Reglas de Seguridad IA', stat_2:'Respuesta Media', stat_3:'Tasa de Detección', stat_4:'Para Empezar',
+    feat_label:'Lo que detectamos // 02', feat_h2_1:'Seguridad que', feat_h2_2:'viaja contigo.',
+    f1_title:'Filtración de Secretos', f1_desc:'Detecta API keys, tokens y contraseñas hardcodeadas. Cubre patrones de OpenAI, AWS y GitHub.',
+    f2_title:'Inyección de Prompts', f2_desc:'Detecta input de usuario que entra directamente a prompts LLM sin sanitización.',
+    f3_title:'Ejecución de Código', f3_desc:'Marca eval(), funciones dinámicas y comandos shell que podrían ejecutar output de LLM como código.',
+    f4_title:'Logging de Datos', f4_desc:'Encuentra prompts sensibles y datos de usuario siendo logueados — una bomba de tiempo para el RGPD.',
+    f5_title:'CORS y Autenticación', f5_desc:'CORS abierto y endpoints de IA sin protección que cualquiera en internet puede explotar.',
+    f6_title:'Escudo de Prompts', f6_desc:'API de firewall en tiempo real que bloquea intentos de jailbreak antes de llegar a tu modelo.',
+    feat_more:'+ 14 reglas más: supply chain, filtración de PII, auth WebSocket, deserialización insegura',
+    how_label:'Proceso // 03', how_h2_1:'Tres pasos.', how_h2_2:'Cero excusas.',
+    how_1_title:'Pega la URL', how_1_desc:'Cualquier URL pública de GitHub. Sin instalar nada. Sin configuración.',
+    how_2_title:'IA Escanea', how_2_desc:'Nuestro motor clona y aplica 20 reglas de seguridad en cada archivo en menos de 2 minutos.',
+    how_3_title:'Obtén el Reporte', how_3_desc:'Hallazgos ordenados por severidad con número de línea, descripción y sugerencias de corrección. Te lo enviamos por email también.',
+    demo_label:'Pruébalo // 04', demo_h2_1:'Escáner en vivo.', demo_h2_2:'Gratis. Ahora mismo.',
+    demo_placeholder:'https://github.com/usuario/repo', demo_btn:'Iniciar Escaneo',
+    term_ready:'Conexión neural establecida.', term_wait:'Esperando repositorio objetivo...',
+    demo_note:'Solo repos públicos en modo demo', demo_note_link:'Regístrate para acceso a repos privados',
+    demo_history:'Escaneos Recientes', demo_empty:'Sin escaneos aún.',
+    trust_index:'Índice de Confianza', trust_sys:'INTEGRIDAD DEL SISTEMA',
+    price_label:'Precios // 05', price_h2_1:'Simple.', price_h2_2:'Sin sorpresas.',
+    plan_free:'Gratis', plan_free_sub:'Para siempre',
+    plan_f1:'5 escaneos de repos', plan_f2:'Reporte básico', plan_f3:'Repos públicos', plan_f4:'Acceso API', plan_f5:'Alertas por email',
+    plan_cta_free:'Empezar Gratis',
+    plan_pro:'Pro — El más popular', plan_pro_sub:'por mes',
+    plan_p1:'100 escaneos/mes', plan_p2:'Reporte detallado completo', plan_p3:'Acceso por API key', plan_p4:'Alertas por email', plan_p5:'Historial de escaneos',
+    plan_cta_pro:'Empezar Pro',
+    plan_ent:'Enterprise', plan_ent_sub:'por mes',
+    plan_e1:'Escaneos ilimitados', plan_e2:'Todo lo de Pro', plan_e3:'Acceso en equipo', plan_e4:'Webhooks y CI', plan_e5:'Soporte prioritario',
+    plan_cta_ent:'Ir a Enterprise',
+    testi_label:'Del campo // 06', testi_h2_1:'Equipos que', testi_h2_2:'lanzan más seguros.',
+    t1_quote:'Detectamos ataques de inyección de prompts que todo nuestro stack de seguridad pasó por alto. VibeCheck se pagó solo en una semana.',
+    t2_quote:'Encaja perfecto en nuestro pipeline de CI. Los reportes son claros, listos para presentar y genuinamente útiles.',
+    t3_quote:'Lanzamos funcionalidades de IA rápido. VibeCheck es la red de seguridad que mantiene los datos de nuestros usuarios a salvo.',
+    cta_eyebrow:'¿Listo para lanzar seguro?', cta_h2_1:'Empieza a escanear.', cta_h2_2:'Es gratis.',
+    cta_btn:'Crear cuenta gratis', cta_login:'¿Ya tienes cuenta? Inicia sesión',
+  }
+};
+
+let currentLang = 'en';
+
+function detectLang() {
+    const saved = localStorage.getItem('vc_lang');
+    if (saved) return saved;
+    const browser = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+    return browser.startsWith('es') ? 'es' : 'en';
+}
+
+function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('vc_lang', lang);
+    document.documentElement.lang = lang;
+
+    // Update all text nodes
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (i18n[lang][key]) el.innerHTML = i18n[lang][key];
+    });
+
+    // Update placeholders
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (i18n[lang][key]) el.placeholder = i18n[lang][key];
+    });
+
+    // Update lang buttons
+    document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll(`#btn-${lang}`).forEach(btn => btn.classList.add('active'));
+
+    // Update terminal
+    document.getElementById('terminalOutput').innerHTML = `
+        <div class="text-zinc-500">// VIBECHECK ENGINE v1.3.0</div>
+        <div class="text-emerald-400 mt-1">&gt; ${i18n[lang].term_ready}</div>
+        <div class="text-zinc-500 mt-1">&gt; ${i18n[lang].term_wait}</div>
+    `;
+}
+
+// Mobile menu
+document.getElementById('hamburger').addEventListener('click', () => document.getElementById('mobile-menu').classList.add('open'));
+document.getElementById('close-menu').addEventListener('click', () => document.getElementById('mobile-menu').classList.remove('open'));
+document.querySelectorAll('.mobile-link').forEach(l => l.addEventListener('click', () => document.getElementById('mobile-menu').classList.remove('open')));
+
+// Scroll animations
+const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+document.querySelectorAll('.section-fade').forEach(el => obs.observe(el));
+
+// Demo scanner
+async function runDemo() {
+    const input = document.getElementById('demoInput').value.trim();
+    const t = i18n[currentLang];
+    if (!input) return alert(t.demo_placeholder);
+    const terminal = document.getElementById('terminalOutput');
+    const btn = document.getElementById('demoBtn');
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t.demo_btn}...`;
+    btn.disabled = true;
+
+    terminal.innerHTML = `
+        <div class="text-zinc-500">// VIBECHECK ENGINE v1.3.0</div>
+        <div class="text-emerald-400 mt-1">&gt; ${t.term_ready}</div>
+        <div class="text-zinc-500 mt-1">&gt; ${input}</div>
+    `;
+
+    try {
+        const res = await fetch('/api/scanner/audit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ repoUrl: input })
+        });
+        const data = await res.json();
+        if (data.error) {
+            terminal.innerHTML += `<div class="text-red-400 mt-2">&gt; ERROR: ${data.error}</div>`;
+        } else {
+            const issues = data.issues || [];
+            terminal.innerHTML += `<div class="text-white mt-3">&gt; ${issues.length} issue(s) found.</div>`;
+            if (data.securityScore !== undefined) terminal.innerHTML += `<div class="text-blue-400">&gt; Security score: ${data.securityScore}/100</div>`;
+            issues.slice(0, 10).forEach(i => {
+                const color = i.severity === 'CRITICAL' ? 'text-red-400' : i.severity === 'HIGH' ? 'text-orange-400' : i.severity === 'MEDIUM' ? 'text-yellow-300' : 'text-zinc-400';
+                const files = i.affectedFiles > 1 ? ` <span class="text-zinc-500">(${i.affectedFiles} files)</span>` : '';
+                terminal.innerHTML += `<div class="${color} mt-1">&gt; [${i.severity}] ${i.ruleId}${files}: ${i.description}</div>`;
+            });
+            if (!issues.length) terminal.innerHTML += `<div class="text-emerald-400 mt-2">&gt; SECURE_ENVIRONMENT ✓</div>`;
+
+            const hist = document.getElementById('scanHistory');
+            const name = input.split('/').slice(-1)[0] || input;
+            const hasCrit = issues.some(i => i.severity === 'CRITICAL');
+            hist.innerHTML = `<div class="p-3 bg-zinc-50 border border-zinc-100 rounded-xl mb-2">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-[9px] font-mono text-zinc-400">${new Date().toLocaleDateString()}</span>
+                    <span class="text-[8px] font-black px-1.5 py-0.5 rounded ${hasCrit ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-500'}">${hasCrit ? 'CRITICAL' : 'SECURE'}</span>
+                </div>
+                <p class="text-xs font-bold truncate">${name}</p>
+            </div>` + hist.innerHTML;
+        }
+    } catch(e) {
+        terminal.innerHTML += `<div class="text-red-400 mt-2">&gt; CONNECTION_FAILURE</div>`;
+    }
+    btn.innerHTML = `<i class="fas fa-shield-halved"></i> ${t.demo_btn}`;
+    btn.disabled = false;
+}
+
+document.getElementById('demoInput').addEventListener('keydown', e => { if (e.key === 'Enter') runDemo(); });
+
+// Calculadora
+function updateCalc(val) {
+    document.getElementById('calcLabel').innerText = val;
+    const risky = ((val / 100) * 3).toFixed(2);
+    const safe  = ((val / 100) * 0.05).toFixed(2);
+    const saved = (risky - safe).toFixed(2);
+    const pct   = Math.min(Math.round((saved / risky) * 100), 100);
+    document.getElementById('calcRisky').innerText   = `$${risky}`;
+    document.getElementById('calcSafe').innerText    = `$${safe}`;
+    document.getElementById('calcSavings').innerText = `$${saved}`;
+    document.getElementById('calcBar').style.width   = `${pct}%`;
+}
+
+// Init
+setLang(detectLang());
+</script>
+</body>
+</html>

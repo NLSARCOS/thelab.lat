@@ -1,0 +1,14 @@
+{
+  "name": "@thelab.lat/vibecheck",
+  "version": "1.0.0",
+  "description": "AI security scanner for vibe-coded projects — by TheLab.lat",
+  "bin": { "vibecheck": "./bin/vibecheck.js" },
+  "main": "./bin/vibecheck.js",
+  "keywords": ["security", "ai", "llm", "scanner", "vibe-coding", "prompt-injection"],
+  "author": "TheLab.lat",
+  "license": "MIT",
+  "repository": { "type": "git", "url": "https://github.com/thelab-lat/vibecheck-cli" },
+  "homepage": "https://vibecheck.thelab.lat",
+  "engines": { "node": ">=18" },
+  "dependencies": { "axios": "^1.6.0", "chalk": "^5.3.0", "ora": "^8.0.1", "commander": "^12.0.0" }
+}

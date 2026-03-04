@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://thelab.lat/sitemap.xml
+
+# Bloquear rutas privadas
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /api/

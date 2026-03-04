@@ -44,7 +44,9 @@ export default function Signup() {
 
         localStorage.setItem('vb_token', token);
         localStorage.setItem('vb_user', JSON.stringify(user));
-        navigate('/dashboard');
+        // Solo mostrar onboarding si nunca se ha visto
+        const onboardingDone = localStorage.getItem('vb_onboarding_done');
+        navigate(onboardingDone ? '/dashboard' : '/shield-onboarding');
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Registration failed. System overloaded.');

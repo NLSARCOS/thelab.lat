@@ -105,33 +105,31 @@ fastify.post('/v1/scanner/audit', async (request, reply) => {
             }
         }
 
-        const issues = await scanner.scanDirectory(scanPath);
-        const criticalCount = issues.filter(i => i.severity === 'CRITICAL').length;
-        const highCount = issues.filter(i => i.severity === 'HIGH').length;
+        const result = await scanner.scanDirectory(scanPath);
+        const { issues } = result;
+        const criticalCount = result.summary.critical;
+        const highCount = result.summary.high;
 
         await db.run(
             'INSERT INTO audit_reports (target, issues_found, critical_level, full_report) VALUES (?, ?, ?, ?)',
-            [target, issues.length, criticalCount > 0, JSON.stringify(issues)]
+            [target, issues.length, criticalCount > 0, JSON.stringify(result)]
         );
-
-        // Calculate security score
-        const score = Math.max(0, 100 - (criticalCount * 25) - (highCount * 10) - (issues.length * 3));
 
         return { 
             timestamp: new Date().toISOString(), 
             status: "AUDIT_COMPLETED", 
             target,
-            securityScore: score,
+            securityScore: result.score,
+            grade: result.grade,
             totalIssues: issues.length,
             criticalIssues: criticalCount,
             highIssues: highCount,
-            summary: {
-                critical: criticalCount,
-                high: highCount,
-                medium: issues.filter(i => i.severity === 'MEDIUM').length,
-                low: issues.filter(i => i.severity === 'LOW').length
-            },
-            issues 
+            summary: result.summary,
+            categories: result.categories,
+            filesScanned: result.filesScanned,
+            topRisks: result.topRisks,
+            verdict: result.verdict,
+            issues
         };
     } catch (error: any) {
         console.error('[VibeCheck] Scan error:', error.message);

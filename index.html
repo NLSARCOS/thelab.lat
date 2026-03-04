@@ -5,85 +5,134 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>THELAB.LAT | AI Digital Asset Factory</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --bg: #FCFCFD; --fg: #09090B; --zinc-200: #E4E4E7; --zinc-900: #18181B; }
-        * { font-family: 'Space Grotesk', sans-serif; cursor: crosshair; scroll-behavior: smooth; }
-        body { background: var(--bg); color: var(--fg); overflow-x: hidden; }
-        
+        * { font-family: 'Space Grotesk', sans-serif; scroll-behavior: smooth; box-sizing: border-box; }
+        body { background: #FCFCFD; color: #09090B; overflow-x: hidden; }
+
         .noise {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: url('https://grainy-gradients.vercel.app/noise.svg');
-            opacity: 0.05; pointer-events: none; z-index: 999;
+            opacity: 0.04; pointer-events: none; z-index: 9999;
         }
 
-        .hero-title { font-size: clamp(3.5rem, 12vw, 10rem); line-height: 0.85; letter-spacing: -0.06em; font-weight: 900; }
-        .glass-card { background: #fff; border: 1px solid var(--zinc-200); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
-        .glass-card:hover { transform: translateY(-8px); border-color: var(--zinc-900); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); }
-        
-        .btn-elite { background: var(--zinc-900); color: #fff; border-radius: 100px; padding: 1.5rem 4rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; transition: all 0.3s; }
-        .btn-elite:hover { background: #000; box-shadow: 0 0 30px rgba(0,0,0,0.1); transform: scale(1.02); }
+        /* NAV */
+        .nav-logo { font-size: 11px; font-weight: 900; letter-spacing: 0.3em; text-transform: uppercase; }
 
-        .line-glow { height: 1px; width: 100%; background: linear-gradient(90deg, transparent, var(--zinc-200), transparent); }
-        section { opacity: 0; transform: translateY(60px); }
+        /* Hamburger */
+        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; }
+        .hamburger span { display: block; width: 22px; height: 2px; background: #09090B; border-radius: 2px; transition: all 0.3s; }
 
-        /* MOBILE OPTIMIZATION */
+        /* Mobile menu */
+        .mobile-menu {
+            display: none; position: fixed; inset: 0; background: #FCFCFD;
+            z-index: 9000; flex-direction: column; align-items: center;
+            justify-content: center; gap: 2rem;
+        }
+        .mobile-menu.open { display: flex; }
+        .mobile-menu a { font-size: 1.5rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; }
+
+        /* HERO */
+        .hero-title {
+            font-size: clamp(2.8rem, 10vw, 9rem);
+            line-height: 0.88;
+            letter-spacing: -0.05em;
+            font-weight: 900;
+        }
+
+        /* CARDS */
+        .glass-card {
+            background: #fff;
+            border: 1px solid #E4E4E7;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .glass-card:hover { transform: translateY(-6px); border-color: #09090B; }
+
+        .btn-primary {
+            background: #09090B; color: #fff;
+            border-radius: 100px; padding: 1rem 2.5rem;
+            font-weight: 900; text-transform: uppercase;
+            letter-spacing: 0.1em; transition: all 0.3s;
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            white-space: nowrap;
+        }
+        .btn-primary:hover { background: #000; transform: scale(1.02); }
+
+        .section-fade { opacity: 0; transform: translateY(50px); transition: all 0.8s ease; }
+        .section-fade.visible { opacity: 1; transform: translateY(0); }
+
+        /* RANGE INPUT */
+        input[type=range] { -webkit-appearance: none; width: 100%; height: 4px; background: #E4E4E7; border-radius: 4px; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #09090B; cursor: pointer; }
+
         @media (max-width: 768px) {
-            nav { padding: 1.5rem 1rem !important; flex-direction: column !important; gap: 1rem !important; background: rgba(255,255,255,0.95); backdrop-blur: 10px; width: 100%; text-align: center; }
-            nav .flex.gap-12 { gap: 1.5rem !important; flex-wrap: wrap; justify-content: center; }
-            .hero-title { font-size: 3rem !important; line-height: 1; margin-top: 100px; }
-            section { padding-left: 1rem !important; padding-right: 1rem !important; }
-            .py-60 { padding-top: 5rem !important; padding-bottom: 5rem !important; }
-            .py-40 { padding-top: 4rem !important; padding-bottom: 4rem !important; }
-            .btn-elite { width: 100% !important; padding: 1.25rem 1.5rem !important; text-align: center; }
-            .max-w-7xl, .max-w-1400 { padding-left: 0; padding-right: 0; }
-            .grid { gap: 2rem !important; }
-            .md\:grid-cols-2 { grid-template-columns: 1fr !important; }
-            .lg\:grid-cols-2 { grid-template-columns: 1fr !important; }
-            .lg\:grid-cols-3 { grid-template-columns: 1fr !important; }
-            h2 { font-size: 2.2rem !important; }
-            
-            /* Calculator Mobile Fix */
-            .glass-card { padding: 1.5rem !important; border-radius: 1.5rem !important; }
-            .glass-card .grid-cols-2 { grid-template-columns: 1fr !important; }
-            .glass-card h3 { margin-bottom: 2rem !important; }
+            .hamburger { display: flex; }
+            .desktop-nav { display: none; }
         }
     </style>
 </head>
 <body>
     <div class="noise"></div>
 
-    <!-- Minimal Nav -->
-    <nav class="fixed w-full z-[1000] px-12 py-10 flex justify-between items-start mix-blend-difference invert uppercase font-black text-[10px] tracking-[0.3em]">
-        <div class="flex flex-col">
-            <span>THELAB<span class="opacity-40">.LAT</span></span>
-            <span class="opacity-30 mt-1">Status: Operational</span>
-        </div>
-        <div class="flex gap-12">
-            <a href="#assets" class="hover:opacity-40">Projects</a>
-            <a href="https://security.thelab.lat" class="hover:opacity-40">Security</a>
-            <a href="/contact.html" class="hover:opacity-40">Contact</a>
+    <!-- NAV -->
+    <nav class="fixed top-0 left-0 right-0 z-[1000] bg-white/90 backdrop-blur-md border-b border-zinc-100">
+        <div class="max-w-7xl mx-auto px-5 py-4 flex justify-between items-center">
+            <div class="nav-logo">
+                THELAB<span class="opacity-30">.LAT</span>
+                <div class="text-[9px] font-black opacity-30 tracking-widest mt-0.5">Status: Operational</div>
+            </div>
+            <!-- Desktop links -->
+            <div class="desktop-nav flex gap-8 text-[10px] font-black uppercase tracking-widest">
+                <a href="#assets" class="hover:opacity-40 transition-opacity">Projects</a>
+                <a href="https://security.thelab.lat" class="hover:opacity-40 transition-opacity">Security</a>
+                <a href="/contact.html" class="hover:opacity-40 transition-opacity">Contact</a>
+            </div>
+            <!-- CTA desktop -->
+            <a href="https://security.thelab.lat" class="desktop-nav btn-primary text-[10px] py-3 px-6">
+                Access Terminal <i class="fas fa-terminal text-xs"></i>
+            </a>
+            <!-- Hamburger mobile -->
+            <div class="hamburger" id="hamburger">
+                <span></span><span></span><span></span>
+            </div>
         </div>
     </nav>
 
-    <main>
-        <!-- Hero Section -->
-        <section id="hero" class="min-h-screen flex flex-col justify-end px-12 pb-32">
-            <div class="max-w-[1500px]">
-                <div class="flex items-center gap-4 mb-10 overflow-hidden">
-                    <div class="w-12 h-px bg-zinc-900"></div>
-                    <span class="text-[11px] font-black uppercase tracking-[0.6em] text-zinc-400">Elite Asset Factory</span>
+    <!-- MOBILE MENU -->
+    <div class="mobile-menu" id="mobile-menu">
+        <button id="close-menu" class="absolute top-5 right-5 text-2xl font-black">&times;</button>
+        <a href="#assets" class="mobile-link">Projects</a>
+        <a href="https://security.thelab.lat" class="mobile-link">Security</a>
+        <a href="/contact.html" class="mobile-link">Contact</a>
+        <a href="https://security.thelab.lat" class="btn-primary mt-4">
+            Access Terminal <i class="fas fa-terminal text-xs"></i>
+        </a>
+    </div>
+
+    <main class="pt-16">
+
+        <!-- HERO -->
+        <section id="hero" class="min-h-[90vh] flex flex-col justify-end px-5 sm:px-10 lg:px-16 pb-12 sm:pb-20">
+            <div class="max-w-7xl mx-auto w-full section-fade">
+                <div class="flex items-center gap-3 mb-6 sm:mb-10">
+                    <div class="w-8 sm:w-12 h-px bg-zinc-900"></div>
+                    <span class="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.4em] sm:tracking-[0.6em] text-zinc-400">Elite Asset Factory</span>
                 </div>
-                <h1 class="hero-title mb-16">ENGINEERING <br/> PROFITABLE <br/> <span class="gradient-text">FUTURES.</span></h1>
-                <div class="grid md:grid-cols-2 gap-20 items-end">
-                    <p class="text-2xl md:text-4xl font-light text-zinc-500 leading-tight">
-                        Construimos y auditamos activos digitales que no solo funcionan, sino que dominan el ecosistema.
+
+                <h1 class="hero-title mb-10 sm:mb-16">
+                    ENGINEERING <br/>
+                    PROFITABLE <br/>
+                    <span class="opacity-20">FUTURES.</span>
+                </h1>
+
+                <div class="flex flex-col sm:flex-row sm:items-end gap-8 sm:gap-16">
+                    <p class="text-lg sm:text-2xl lg:text-3xl font-light text-zinc-500 leading-relaxed max-w-lg">
+                        Construimos activos digitales que no solo funcionan, sino que dominan el ecosistema.
                     </p>
-                    <div class="flex gap-6">
-                        <a href="https://security.thelab.lat" class="btn-elite flex items-center gap-4">
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="https://security.thelab.lat" class="btn-primary justify-center">
                             Access Terminal <i class="fas fa-terminal text-xs"></i>
                         </a>
                     </div>
@@ -91,55 +140,62 @@
             </div>
         </section>
 
-        <div class="line-glow"></div>
+        <div class="h-px bg-gradient-to-r from-transparent via-zinc-200 to-transparent"></div>
 
-        <!-- Integration VibeCheck -->
-        <section id="vibecheck" class="py-60 px-12">
-            <div class="max-w-[1400px] mx-auto grid lg:grid-cols-2 gap-32 items-center">
-                <div class="space-y-12">
+        <!-- VIBECHECK SECTION -->
+        <section id="vibecheck" class="py-20 sm:py-32 lg:py-40 px-5 sm:px-10 lg:px-16">
+            <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 sm:gap-16 lg:gap-24 items-center section-fade">
+
+                <!-- Left text -->
+                <div class="space-y-8">
                     <span class="text-xs font-black uppercase text-blue-600 tracking-[0.4em]">Core Asset // 01</span>
-                    <h2 class="text-7xl font-black uppercase tracking-tighter leading-[0.85]">VibeCheck <br/> <span class="opacity-20 text-zinc-900">Security</span></h2>
-                    <p class="text-xl text-zinc-500 font-light max-w-md leading-relaxed">
+                    <h2 class="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-black uppercase tracking-tighter leading-[0.88]">
+                        VibeCheck <br/>
+                        <span class="opacity-20 text-zinc-900">Security</span>
+                    </h2>
+                    <p class="text-base sm:text-lg text-zinc-500 font-light leading-relaxed max-w-md">
                         El primer firewall de inferencia diseñado para detener el robo de datos y el jailbreak de agentes en tiempo real.
                     </p>
-                    <div class="flex gap-16">
+                    <div class="flex gap-10 sm:gap-16">
                         <div>
-                            <p class="text-4xl font-black mb-2 tracking-tighter text-zinc-900">98%</p>
-                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Defense Rate</p>
+                            <p class="text-3xl sm:text-4xl font-black tracking-tighter text-zinc-900">98%</p>
+                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">Defense Rate</p>
                         </div>
                         <div>
-                            <p class="text-4xl font-black mb-2 tracking-tighter text-zinc-900">4ms</p>
-                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Inference Lag</p>
+                            <p class="text-3xl sm:text-4xl font-black tracking-tighter text-zinc-900">4ms</p>
+                            <p class="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">Inference Lag</p>
                         </div>
                     </div>
+                    <a href="https://vibecheck.thelab.lat" class="btn-primary inline-flex">
+                        Try VibeCheck Free <i class="fas fa-shield-halved text-xs"></i>
+                    </a>
                 </div>
 
-                <!-- Calculator Container -->
-                <div class="glass-card p-12 md:p-20 rounded-[3rem] relative">
-                    <h3 class="text-[11px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-12">Loss Prevention Calculator</h3>
-                    <div class="space-y-10">
+                <!-- Calculator Card -->
+                <div class="glass-card p-7 sm:p-10 rounded-3xl">
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-8">Loss Prevention Calculator</h3>
+                    <div class="space-y-8">
                         <div>
-                            <input type="range" min="10" max="5000" step="10" id="tokenRange" 
-                                   class="w-full h-1.5 bg-zinc-100 accent-zinc-900 rounded-full appearance-none cursor-pointer">
-                            <div class="flex justify-between mt-6 text-[10px] font-black uppercase text-zinc-500">
+                            <input type="range" min="10" max="5000" step="10" id="tokenRange" value="500">
+                            <div class="flex justify-between mt-4 text-[10px] font-black uppercase text-zinc-500">
                                 <span>Monthly Invocations: <span id="tokenLabel" class="text-zinc-900">500</span>K</span>
-                                <span class="text-emerald-500">Security Verified</span>
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-6">
-                            <div class="p-8 bg-zinc-50 rounded-[2rem] border border-zinc-100">
-                                <span class="text-[10px] font-black text-zinc-400 uppercase block mb-2 tracking-widest">Risky Cost</span>
-                                <span class="text-4xl font-black tracking-tighter text-red-500" id="oldCost">$15.00</span>
-                            </div>
-                            <div class="p-8 bg-black rounded-[2rem] shadow-2xl">
-                                <span class="text-[10px] font-black text-zinc-600 uppercase block mb-2 tracking-widest">Gurkha Shield</span>
-                                <span class="text-4xl font-black tracking-tighter text-white" id="newCost">$0.25</span>
+                                <span class="text-emerald-500">Verified</span>
                             </div>
                         </div>
 
-                        <button onclick="window.location.href='https://security.thelab.lat/signup'" 
-                                class="w-full py-6 bg-zinc-900 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-black transition-all">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-5 sm:p-7 bg-zinc-50 rounded-2xl border border-zinc-100">
+                                <span class="text-[9px] font-black text-zinc-400 uppercase block mb-2 tracking-widest">Risky Cost</span>
+                                <span class="text-2xl sm:text-3xl font-black tracking-tighter text-red-500" id="oldCost">$15.00</span>
+                            </div>
+                            <div class="p-5 sm:p-7 bg-black rounded-2xl shadow-xl">
+                                <span class="text-[9px] font-black text-zinc-600 uppercase block mb-2 tracking-widest">Gurkha Shield</span>
+                                <span class="text-2xl sm:text-3xl font-black tracking-tighter text-white" id="newCost">$0.25</span>
+                            </div>
+                        </div>
+
+                        <button onclick="window.location.href='https://vibecheck.thelab.lat/signup'"
+                                class="w-full py-4 bg-zinc-900 text-white font-black uppercase tracking-widest rounded-2xl hover:bg-black transition-all text-sm">
                             Initialize Defense
                         </button>
                     </div>
@@ -147,31 +203,52 @@
             </div>
         </section>
 
-        <!-- Assets Grid -->
-        <section id="assets" class="py-60 px-12 bg-white">
-            <div class="max-w-[1400px] mx-auto">
-                <div class="flex flex-col md:flex-row justify-between items-end mb-24 gap-12">
-                    <h2 class="text-8xl font-black tracking-tighter uppercase leading-[0.8]">Strategic <br/> <span class="opacity-20 text-zinc-900">Inventory.</span></h2>
-                    <p class="text-xl text-zinc-400 font-light max-w-sm italic">Portafolio de infraestructuras IA de alto rendimiento bajo gestión.</p>
+        <div class="h-px bg-gradient-to-r from-transparent via-zinc-200 to-transparent"></div>
+
+        <!-- ASSETS GRID -->
+        <section id="assets" class="py-20 sm:py-32 lg:py-40 px-5 sm:px-10 lg:px-16 bg-white">
+            <div class="max-w-7xl mx-auto section-fade">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-6 mb-12 sm:mb-20">
+                    <h2 class="text-4xl sm:text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-[0.85]">
+                        Strategic <br/>
+                        <span class="opacity-20 text-zinc-900">Inventory.</span>
+                    </h2>
+                    <p class="text-base sm:text-lg text-zinc-400 font-light max-w-xs italic">
+                        Portafolio de infraestructuras IA de alto rendimiento.
+                    </p>
                 </div>
-                
-                <div class="grid lg:grid-cols-3 gap-1px bg-zinc-100 border border-zinc-100 rounded-[3rem] overflow-hidden shadow-2xl">
-                    <div class="bg-white p-16 space-y-8">
+
+                <!-- Cards: stack on mobile, 3-col on desktop -->
+                <div class="flex flex-col lg:grid lg:grid-cols-3 rounded-3xl overflow-hidden border border-zinc-100 shadow-xl">
+
+                    <div class="bg-white p-8 sm:p-12 space-y-5 border-b lg:border-b-0 lg:border-r border-zinc-100">
                         <span class="text-[10px] font-black uppercase text-emerald-500 tracking-[0.3em]">Operational</span>
-                        <h4 class="text-3xl font-black uppercase tracking-tighter">AgenAuto SaaS</h4>
-                        <p class="text-zinc-500 font-light leading-relaxed">Factoría multi-tenant para despliegue masivo de agentes autónomos.</p>
-                        <a href="/dashboard" class="text-[10px] font-black uppercase tracking-widest text-zinc-300 hover:text-zinc-900 transition-colors">Internal Dashboard <i class="fas fa-external-link-alt ml-2"></i></a>
+                        <h4 class="text-2xl sm:text-3xl font-black uppercase tracking-tighter">AgenAuto SaaS</h4>
+                        <p class="text-zinc-500 font-light leading-relaxed text-sm sm:text-base">
+                            Factoría multi-tenant para despliegue masivo de agentes autónomos.
+                        </p>
+                        <a href="/dashboard" class="text-[10px] font-black uppercase tracking-widest text-zinc-300 hover:text-zinc-900 transition-colors">
+                            Internal Dashboard <i class="fas fa-external-link-alt ml-1"></i>
+                        </a>
                     </div>
-                    <div class="bg-white p-16 space-y-8">
+
+                    <div class="bg-white p-8 sm:p-12 space-y-5 border-b lg:border-b-0 lg:border-r border-zinc-100">
                         <span class="text-[10px] font-black uppercase text-blue-600 tracking-[0.3em]">Live Beta</span>
-                        <h4 class="text-3xl font-black uppercase tracking-tighter">VibeCheck Sec</h4>
-                        <p class="text-zinc-500 font-light leading-relaxed">El estándar militar para auditoría de código IA y protección de prompts.</p>
-                        <a href="https://security.thelab.lat" class="text-[10px] font-black uppercase tracking-widest text-blue-600">Enter Terminal <i class="fas fa-chevron-right ml-2"></i></a>
+                        <h4 class="text-2xl sm:text-3xl font-black uppercase tracking-tighter">VibeCheck Sec</h4>
+                        <p class="text-zinc-500 font-light leading-relaxed text-sm sm:text-base">
+                            El estándar militar para auditoría de código IA y protección de prompts.
+                        </p>
+                        <a href="https://vibecheck.thelab.lat" class="text-[10px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-800">
+                            Enter Terminal <i class="fas fa-chevron-right ml-1"></i>
+                        </a>
                     </div>
-                    <div class="bg-[#F8FAFC] p-16 space-y-8">
-                        <span class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.3em]">Incubation // 03:00AM</span>
-                        <h4 class="text-3xl font-black uppercase tracking-tighter opacity-40">Agent Radar</h4>
-                        <p class="text-zinc-400 font-light leading-relaxed">Inteligencia autónoma para detección y captura de leads en tiempo real.</p>
+
+                    <div class="bg-zinc-50 p-8 sm:p-12 space-y-5">
+                        <span class="text-[10px] font-black uppercase text-zinc-400 tracking-[0.3em]">Incubation</span>
+                        <h4 class="text-2xl sm:text-3xl font-black uppercase tracking-tighter opacity-40">Agent Radar</h4>
+                        <p class="text-zinc-400 font-light leading-relaxed text-sm sm:text-base">
+                            Inteligencia autónoma para detección y captura de leads en tiempo real.
+                        </p>
                         <span class="inline-block px-3 py-1 bg-white border border-zinc-200 text-[9px] font-black uppercase text-zinc-300 rounded">Encrypted</span>
                     </div>
                 </div>
@@ -179,55 +256,41 @@
         </section>
     </main>
 
-    <footer class="py-32 px-12 border-t border-zinc-100 text-center">
-        <p class="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-300">
+    <!-- FOOTER -->
+    <footer class="py-12 px-5 border-t border-zinc-100 text-center">
+        <p class="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300">
             Powered by Antigravity Elite // 2026 // TheLab.lat Ecosystem
         </p>
     </footer>
 
     <script>
-        gsap.registerPlugin(ScrollTrigger);
-
-        // Entrance Animations
-        gsap.to("section", {
-            opacity: 1, y: 0, duration: 1.8, ease: "expo.out", stagger: 0.4,
-            scrollTrigger: { trigger: "main", start: "top 90%" }
-        });
-
-        /* Calculator Interactive Logic */
+        // Calculator
         const range = document.getElementById('tokenRange');
         const label = document.getElementById('tokenLabel');
         const oldCostEl = document.getElementById('oldCost');
         const newCostEl = document.getElementById('newCost');
-
         range.addEventListener('input', (e) => {
             const val = e.target.value;
             label.innerText = val;
-            const oldPrice = (val / 100) * 3;
-            const newPrice = (val / 100) * 0.05;
-            oldCostEl.innerText = `$${oldPrice.toFixed(2)}`;
-            newCostEl.innerText = `$${newPrice.toFixed(2)}`;
+            oldCostEl.innerText = `$${((val / 100) * 3).toFixed(2)}`;
+            newCostEl.innerText = `$${((val / 100) * 0.05).toFixed(2)}`;
         });
 
-        // Mobile Menu Logic
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const closeMenuBtn = document.getElementById('close-menu-btn');
+        // Mobile menu
+        const hamburger = document.getElementById('hamburger');
         const mobileMenu = document.getElementById('mobile-menu');
+        const closeMenu = document.getElementById('close-menu');
         const mobileLinks = document.querySelectorAll('.mobile-link');
 
-        mobileMenuBtn.addEventListener('click', () => {
-            mobileMenu.classList.add('menu-open');
-        });
+        hamburger.addEventListener('click', () => mobileMenu.classList.add('open'));
+        closeMenu.addEventListener('click', () => mobileMenu.classList.remove('open'));
+        mobileLinks.forEach(l => l.addEventListener('click', () => mobileMenu.classList.remove('open')));
 
-        closeMenuBtn.addEventListener('click', () => {
-            mobileMenu.classList.remove('menu-open');
-        });
-
-        mobileLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                mobileMenu.classList.remove('menu-open');
-            });
-        });
+        // Scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.section-fade').forEach(el => observer.observe(el));
     </script>
 </body>
 </html>

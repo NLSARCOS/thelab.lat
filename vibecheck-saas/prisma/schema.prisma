@@ -19,8 +19,13 @@ model User {
   passwordHash  String
   name          String?
   role          Role     @default(USER)
-  credits       Int      @default(5) // 5 free scans
-  createdAt     DateTime @default(now())
+  credits       Int      @default(0)
+  plan               String   @default("free") // free | pro | shield
+  subscriptionId     String?  // ID de suscripción en Dodo
+  subscriptionStatus String   @default("inactive") // inactive | active | cancelled | past_due
+  cancelAt           DateTime? // fecha programada de cancelación
+  trialEndsAt        DateTime? // fin del trial de 7 días
+  createdAt          DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   organizations Organization[]
