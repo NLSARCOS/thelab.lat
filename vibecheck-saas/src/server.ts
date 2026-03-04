@@ -1340,7 +1340,7 @@ app.get('/api/scans/:id', requireAuth, async (req: express.Request, res: express
   try {
     const userId = (req as any).user.userId;
     const scan = await prisma.auditReport.findFirst({
-      where: { id: req.params.id, userId }
+      where: { id: String(req.params.id), userId: String(userId) }
     });
     if (!scan) return res.status(404).json({ error: 'Scan not found' });
 
@@ -1355,7 +1355,7 @@ app.get('/api/scans/:id', requireAuth, async (req: express.Request, res: express
 app.delete('/api/scans/:id', requireAuth, async (req: express.Request, res: express.Response) => {
   try {
     const userId = (req as any).user.userId;
-    const scan = await prisma.auditReport.findFirst({ where: { id: req.params.id, userId } });
+    const scan = await prisma.auditReport.findFirst({ where: { id: String(req.params.id), userId: String(userId) } });
     if (!scan) return res.status(404).json({ error: 'Not found' });
     await prisma.auditReport.delete({ where: { id: scan.id } });
     res.json({ success: true });
@@ -1458,7 +1458,7 @@ app.get('/api/admin/users', requireAdmin, async (req: express.Request, res: expr
 app.put('/api/admin/users/:id/plan', requireAdmin, async (req: express.Request, res: express.Response) => {
   try {
     const { plan } = req.body;
-    await prisma.user.update({ where: { id: req.params.id }, data: { plan, subscriptionStatus: 'active' } });
+    await prisma.user.update({ where: { id: String(req.params.id) }, data: { plan, subscriptionStatus: 'active' } });
     res.json({ success: true, plan });
   } catch (e) { res.status(500).json({ error: 'Failed' }); }
 });
