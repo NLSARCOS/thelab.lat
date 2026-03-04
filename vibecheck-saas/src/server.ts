@@ -441,6 +441,22 @@ async function apiKeyMiddleware(req: AuthRequest, res: Response, next: NextFunct
   }
 }
 
+// ─── RATE LIMIT MIDDLEWARE ───────────────────────────────────
+function registerLimiter(req: Request, res: Response, next: NextFunction) {
+  const ip = getClientIp(req);
+  if (!checkRateLimit(`register-mw:${ip}`, 5, 60 * 60 * 1000)) {
+    return sendError(res, 429, 'Too many registration attempts. Try again in 1 hour.');
+  }
+  next();
+}
+function loginLimiter(req: Request, res: Response, next: NextFunction) {
+  const ip = getClientIp(req);
+  if (!checkRateLimit(`login-mw:${ip}`, 10, 15 * 60 * 1000)) {
+    return sendError(res, 429, 'Too many login attempts. Try again in 15 minutes.');
+  }
+  next();
+}
+
 // ─── AUTH ROUTES ────────────────────────────────────────────
 app.post('/api/auth/register', registerLimiter, async (req: Request, res: Response) => {
   const ip = getClientIp(req);
@@ -449,10 +465,12 @@ app.post('/api/auth/register', registerLimiter, async (req: Request, res: Respon
   }
   const { email, password, name } = req.body;
   if (!email || !password) return sendError(res, 400, 'Email and password required');
+  if (typeof password !== 'string' || password.length < 8) return sendError(res, 400, 'Password must be at least 8 characters');
+  if (typeof email !== 'string' || !email.includes('@')) return sendError(res, 400, 'Invalid email format');
   try {
     const passwordHash = await bcrypt.hash(password, 12);
     const user = await prisma.user.create({
-      data: { email, passwordHash, name, role: 'USER', credits: 0, plan: 'free' }
+      data: { email, passwordHash, name, role: 'USER', credits: 5, plan: 'free' }
     });
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     void sendEmailSafe({
@@ -811,7 +829,7 @@ app.post('/api/shield/events', async (req: Request, res: Response) => {
           status: ev.blocked ? 'BLOCKED' : 'ALLOWED',
           ruleMatched: ev.rule || ev.type || null,
         }
-      }).catch(() => {});
+      }).catch(() => { });
     }
     return res.json({ received: events.length });
   } catch (e: any) {
@@ -908,16 +926,16 @@ app.delete('/api/keys/:id', authMiddleware as any, async (req: AuthRequest, res:
 
 // ─── PAYMENTS (DodoPayments) ───────────────────────────────
 const PACKAGES: Record<string, { price: number; name: string; plan: string; productId: string }> = {
-  'pro':    { price: 900,  name: 'Pro Monthly',    plan: 'pro',    productId: DODO_PRODUCT_PRO },
+  'pro': { price: 900, name: 'Pro Monthly', plan: 'pro', productId: DODO_PRODUCT_PRO },
   'shield': { price: 2900, name: 'Shield Monthly', plan: 'shield', productId: DODO_PRODUCT_SHIELD }
 };
 
 app.get('/api/pricing', (_req: Request, res: Response) => {
   try {
     const plans = [
-      { id: 'free',   name: 'Free',   price: 0,    priceFormatted: '$0',     description: 'Public repos, unlimited scans', features: ['Unlimited public repo scans','60+ security rules','Security score & grade','CLI tool'] },
-      { id: 'pro',    name: 'Pro',    price: 900,  priceFormatted: '$9/mo',  description: 'Private repos + CI/CD',        features: ['Everything in Free','Private repo scanning','GitHub Actions integration','Auto-fix suggestions','Email alerts','API access'] },
-      { id: 'shield', name: 'Shield', price: 2900, priceFormatted: '$29/mo', description: 'Pro + active WAF protection',   features: ['Everything in Pro','WAF — blocks SQLi, XSS, LLM injection','Honeypot — 20 bot traps','Anti-spam — 40+ bot fingerprints','IP Blocker — Tor + scanner ranges','Real-time threat dashboard'] },
+      { id: 'free', name: 'Free', price: 0, priceFormatted: '$0', description: 'Public repos, unlimited scans', features: ['Unlimited public repo scans', '60+ security rules', 'Security score & grade', 'CLI tool'] },
+      { id: 'pro', name: 'Pro', price: 900, priceFormatted: '$9/mo', description: 'Private repos + CI/CD', features: ['Everything in Free', 'Private repo scanning', 'GitHub Actions integration', 'Auto-fix suggestions', 'Email alerts', 'API access'] },
+      { id: 'shield', name: 'Shield', price: 2900, priceFormatted: '$29/mo', description: 'Pro + active WAF protection', features: ['Everything in Pro', 'WAF — blocks SQLi, XSS, LLM injection', 'Honeypot — 20 bot traps', 'Anti-spam — 40+ bot fingerprints', 'IP Blocker — Tor + scanner ranges', 'Real-time threat dashboard'] },
     ];
     return res.json({ plans, packages: plans });
   } catch (error: any) {
@@ -1016,7 +1034,7 @@ app.post('/api/webhooks/dodo', express.raw({ type: '*/*' }), async (req: Request
   try {
     const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(JSON.stringify(req.body));
     const signature = req.headers['webhook-signature'] as string || '';
-    const timestamp  = req.headers['webhook-timestamp']  as string || '';
+    const timestamp = req.headers['webhook-timestamp'] as string || '';
 
     if (DODO_WEBHOOK_SECRET && signature) {
       const signedPayload = `${timestamp}.${rawBody.toString()}`;
@@ -1035,9 +1053,9 @@ app.post('/api/webhooks/dodo', express.raw({ type: '*/*' }), async (req: Request
     const eventType = String(event?.type || event?.event_type || '');
     console.log(`[DODO WEBHOOK] Event: ${eventType}`);
 
-    const payload  = (event?.data || {}) as JsonRecord;
+    const payload = (event?.data || {}) as JsonRecord;
     const metadata = (payload?.metadata || {}) as JsonRecord;
-    const userId   = metadata?.userId || payload?.customer?.customer_id || payload?.customer_id;
+    const userId = metadata?.userId || payload?.customer?.customer_id || payload?.customer_id;
     const subscriptionId = payload?.subscription_id || payload?.id || null;
 
     // ── subscription.active / payment.succeeded / subscription.renewed ──
@@ -1291,6 +1309,9 @@ app.delete('/api/admin/users/:id', authMiddleware as any, adminMiddleware as any
 
 // ─── START ─────────────────────────────────────────────────
 
+// Alias: reuse authMiddleware for routes that reference requireAuth
+const requireAuth = authMiddleware as any;
+
 // ==========================================
 // SCANS (Missing endpoints)
 // ==========================================
@@ -1306,11 +1327,11 @@ app.get('/api/scans', requireAuth, async (req: express.Request, res: express.Res
     // Parse JSON
     const mapped = scans.map(s => {
       let data = {};
-      try { data = JSON.parse(s.fullJson); } catch(e){}
+      try { data = JSON.parse(s.fullJson); } catch (e) { }
       return { id: s.id, repoUrl: s.repoUrl, issuesFound: s.issuesFound, criticalFound: s.criticalFound, createdAt: s.createdAt, data };
     });
     res.json(mapped);
-  } catch(e) {
+  } catch (e) {
     res.status(500).json({ error: 'Failed to fetch scans' });
   }
 });
@@ -1319,14 +1340,14 @@ app.get('/api/scans/:id', requireAuth, async (req: express.Request, res: express
   try {
     const userId = (req as any).user.userId;
     const scan = await prisma.auditReport.findFirst({
-       where: { id: req.params.id, userId }
+      where: { id: req.params.id, userId }
     });
-    if(!scan) return res.status(404).json({ error: 'Scan not found' });
-    
+    if (!scan) return res.status(404).json({ error: 'Scan not found' });
+
     let fullJson = {};
-    try { fullJson = JSON.parse(scan.fullJson); } catch(e){}
+    try { fullJson = JSON.parse(scan.fullJson); } catch (e) { }
     res.json({ ...scan, fullJson });
-  } catch(e) {
+  } catch (e) {
     res.status(500).json({ error: 'Failed to fetch scan' });
   }
 });
@@ -1335,10 +1356,10 @@ app.delete('/api/scans/:id', requireAuth, async (req: express.Request, res: expr
   try {
     const userId = (req as any).user.userId;
     const scan = await prisma.auditReport.findFirst({ where: { id: req.params.id, userId } });
-    if(!scan) return res.status(404).json({ error: 'Not found' });
+    if (!scan) return res.status(404).json({ error: 'Not found' });
     await prisma.auditReport.delete({ where: { id: scan.id } });
     res.json({ success: true });
-  } catch(e) {
+  } catch (e) {
     res.status(500).json({ error: 'Deletion failed' });
   }
 });
@@ -1351,10 +1372,10 @@ app.put('/api/auth/me', requireAuth, async (req: express.Request, res: express.R
   try {
     const userId = (req as any).user.userId;
     const { name } = req.body;
-    if(!name) return res.status(400).json({ error: 'Name is required' });
+    if (!name) return res.status(400).json({ error: 'Name is required' });
     const user = await prisma.user.update({ where: { id: userId }, data: { name } });
-    res.json({ success: true, user: { id: user.id, name: user.name, email: user.email }});
-  } catch(e) {
+    res.json({ success: true, user: { id: user.id, name: user.name, email: user.email } });
+  } catch (e) {
     res.status(500).json({ error: 'Update failed' });
   }
 });
@@ -1368,7 +1389,7 @@ app.delete('/api/auth/me', requireAuth, async (req: express.Request, res: expres
     await prisma.repository.deleteMany({ where: { ownerId: userId } });
     await prisma.user.delete({ where: { id: userId } });
     res.json({ success: true, message: 'Account permanently deleted' });
-  } catch(e) {
+  } catch (e) {
     res.status(500).json({ error: 'Deletion failed. Contact support.' });
   }
 });
@@ -1381,14 +1402,14 @@ app.get('/api/payments/subscription', requireAuth, async (req: express.Request, 
   try {
     const userId = (req as any).user.userId;
     const user = await prisma.user.findUnique({ where: { id: userId } });
-    if(!user) return res.status(404).json({ error: 'User not found' });
-    res.json({ 
-      plan: user.plan, 
-      subscriptionStatus: user.subscriptionStatus, 
-      cancelAt: user.cancelAt, 
-      trialEndsAt: user.trialEndsAt 
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({
+      plan: user.plan,
+      subscriptionStatus: user.subscriptionStatus,
+      cancelAt: user.cancelAt,
+      trialEndsAt: user.trialEndsAt
     });
-  } catch(e) {
+  } catch (e) {
     res.status(500).json({ error: 'Failed' });
   }
 });
@@ -1399,14 +1420,14 @@ app.post('/api/payments/cancel', requireAuth, async (req: express.Request, res: 
     // Puesto para cancelar al final del mes
     const cancelAt = new Date();
     cancelAt.setDate(cancelAt.getDate() + 30);
-    
-    await prisma.user.update({ 
-      where: { id: userId }, 
-      data: { cancelAt, subscriptionStatus: 'cancelled_pending' } 
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { cancelAt, subscriptionStatus: 'cancelled_pending' }
     });
-    
+
     res.json({ success: true, cancelAt });
-  } catch(e) {
+  } catch (e) {
     res.status(500).json({ error: 'Cancellation failed' });
   }
 });
@@ -1418,8 +1439,8 @@ app.post('/api/payments/cancel', requireAuth, async (req: express.Request, res: 
 function requireAdmin(req: express.Request, res: express.Response, next: express.NextFunction) {
   requireAuth(req, res, async () => {
     const userId = (req as any).user.userId;
-    const user = await prisma.user.findUnique({ where: { id: userId }});
-    if(!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Admin access required' });
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || user.role !== 'ADMIN') return res.status(403).json({ error: 'Admin access required' });
     next();
   });
 }
@@ -1427,19 +1448,19 @@ function requireAdmin(req: express.Request, res: express.Response, next: express
 app.get('/api/admin/users', requireAdmin, async (req: express.Request, res: express.Response) => {
   try {
     const users = await prisma.user.findMany({
-      select: { id: true, name: true, email: true, plan: true, role: true, createdAt: true, _count: { select: { scanHistory: true }}},
+      select: { id: true, name: true, email: true, plan: true, role: true, createdAt: true, _count: { select: { scanHistory: true } } },
       orderBy: { createdAt: 'desc' }
     });
     res.json(users);
-  } catch(e) { res.status(500).json({error:'Failed'}); }
+  } catch (e) { res.status(500).json({ error: 'Failed' }); }
 });
 
 app.put('/api/admin/users/:id/plan', requireAdmin, async (req: express.Request, res: express.Response) => {
   try {
     const { plan } = req.body;
-    await prisma.user.update({ where: { id: req.params.id }, data: { plan, subscriptionStatus: 'active' }});
+    await prisma.user.update({ where: { id: req.params.id }, data: { plan, subscriptionStatus: 'active' } });
     res.json({ success: true, plan });
-  } catch(e) { res.status(500).json({error:'Failed'}); }
+  } catch (e) { res.status(500).json({ error: 'Failed' }); }
 });
 
 app.listen(PORT, () => {

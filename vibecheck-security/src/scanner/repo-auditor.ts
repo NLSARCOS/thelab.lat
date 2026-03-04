@@ -382,7 +382,7 @@ const SECURITY_RULES: SecurityRule[] = [
     id: 'HONEY-003',
     category: 'HONEYPOT',
     severity: 'HIGH',
-    pattern: 'res\\.status\\([^)]*\\)\\.send\\([^)]*err\\.stack|err\\.stack\s*\+|stack:\\s*err\\.stack',
+    pattern: 'res\\.status\\([^)]*\\)\\.send\\([^)]*err\\.stack|err\\.stack\\s*\\+|stack:\\s*err\\.stack',
     description: 'Stack traces exposed in error responses.',
     suggestion: 'Return generic errors and log stack traces server-side only.',
     cwe: 'CWE-209',

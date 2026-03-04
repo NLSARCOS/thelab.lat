@@ -1,0 +1,10 @@
+{
+    "name": "thelab-vibecheck",
+    "private": true,
+    "scripts": {
+        "dev": "npx -y concurrently -n scanner,api,dashboard -c green,yellow,blue \"cd vibecheck-security && npx tsx src/index.ts\" \"cd vibecheck-saas && npx tsx src/server.ts\" \"cd vibecheck-dashboard && npm run dev\"",
+        "dev:api": "cd vibecheck-saas && npx tsx watch src/server.ts",
+        "dev:scanner": "cd vibecheck-security && npx tsx src/index.ts",
+        "dev:dashboard": "cd vibecheck-dashboard && npm run dev"
+    }
+}
